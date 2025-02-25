@@ -1,0 +1,11 @@
+# Commit Message Validation Configuration Template
+rules:
+  # Allowed commit types (customizable)
+  allowed_types:
+    - feat # New feature
+    - fix # Bug fix
+    - docs # Documentation update
+    - style # Code style adjustments
+    - refactor # Code refactoring
+    - test # Test related
+    - chore # Maintenance tasks

@@ -1,0 +1,39 @@
+repos:
+  - repo: local
+    hooks:
+      - id: cargo-fmt
+        name: cargo fmt
+        description: Format files with rust-fmt.
+        # Check formatting without modifying files (manual formatting required after confirmation)
+        entry: cargo fmt -- --check
+        language: rust
+        files: \.rs$
+        pass_filenames: false
+      - id: cargo-check
+        name: cargo check
+        description: Check the package for errors.
+        entry: cargo check
+        language: rust
+        files: \.rs$
+        pass_filenames: false
+      - id: cargo-clippy
+        name: cargo clippy
+        description: Lint rust sources
+        entry: cargo clippy --  -D warnings
+        language: rust
+        files: \.rs$
+        pass_filenames: false
+      - id: cargo-test
+        name: cargo test
+        description: unit test for the project
+        entry: cargo test --
+        language: rust
+        files: \.rs$
+        pass_filenames: false
+      - id: typos
+        name: typos
+        description: check typo
+        entry: typos
+        language: rust
+        # Must pass filenames to check only staged files
+        pass_filenames: true
