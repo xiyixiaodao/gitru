@@ -147,6 +147,7 @@ dependencies = [
  "serde_yaml",
  "tracing",
  "tracing-subscriber",
+ "winapi",
 ]
 
 [[package]]
