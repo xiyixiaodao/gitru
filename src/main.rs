@@ -1,6 +1,6 @@
 use crate::install::init_commit_msg_rule;
 use clap::Parser;
-use cli::Hooks;
+use cli::{Cli, Hooks};
 use install::install_commit_msg_hook;
 use util::init_tracing_once;
 
@@ -12,8 +12,10 @@ mod validate;
 fn main() {
     init_tracing_once();
 
-    let args = Hooks::parse();
-    match args {
+    let cli = Cli::parse();
+    let hook = cli.command;
+
+    match hook {
         Hooks::CommitMsg { action } => match action {
             cli::CommitMsgAction::Init => {
                 init_commit_msg_rule();

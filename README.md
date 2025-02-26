@@ -38,7 +38,8 @@ After installation:
 *    Git hook installed to `.git/hooks/commit-msg ` 
 *    Configuration template created at `.commit-msg-rule.yaml`
 
-Customize validation rules by editing `.commit-msg-rule.yaml`
+Customize validation rules by editing `.commit-msg-rule.yaml`  
+
 Commit validation example:
 ```bash
 git commit -m "feat: add new API endpoint"

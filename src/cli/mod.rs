@@ -4,7 +4,7 @@ pub use commit_msg_action::CommitMsgAction;
 use clap::Parser;
 
 #[derive(Parser, Debug)]
-#[command(name = "gitru", version, about)]
+#[command(version, about, long_about = None)]
 pub struct Cli {
     #[command(subcommand)]
     pub command: Hooks,
