@@ -9,6 +9,9 @@ repository = "https://github.com/xiyixiaodao/gitru"
 keywords = ["git", "commit", "commit-msg", "hook", "validation"]
 categories = ["development-tools"]
 
+[profile.release]
+# Enable Link-Time Optimization
+lto = true
 
 [dependencies]
 clap = { version = "4.5", features = ["derive"] }
