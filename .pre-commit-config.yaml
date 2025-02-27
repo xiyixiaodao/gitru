@@ -37,3 +37,10 @@ repos:
         language: rust
         # Must pass filenames to check only staged files
         pass_filenames: true
+      - id: cargo-deny
+        name: cargo deny check
+        description: Check dependencies with cargo-deny
+        entry: cargo deny check
+        language: rust
+        files: \.(toml|lock)$
+        pass_filenames: false
