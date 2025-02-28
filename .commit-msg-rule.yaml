@@ -1,11 +1,83 @@
 # Commit Message Validation Configuration Template
+# The Conventional Commits specification is a lightweight convention on top of commit messages.
+# For detailed content, please refer to:  https://www.conventionalcommits.org/en/v1.0.0/#summary
+# The commit message should be structured as follows:
+#
+# ╔═════════════════════════════════════════════════╗
+# ║          COMMIT FORMAT TEMPLATE                 ║
+# ╠═════════════════════════════════════════════════╣
+# ║    type(optional scope): subject                ║
+# ║                                                 ║
+# ║    [optional body]                              ║
+# ║                                                 ║
+# ║    [optional footer]                            ║
+# ║     - BREAKING CHANGE: xxxxx                    ║
+# ║     - Closes #issue                             ║
+# ╚═════════════════════════════════════════════════╝
+#
+# Structure explanation:
+# 1. type        → Required, commit type (feat/fix/docs etc)
+# 2. (scope)     → Optional, scope (wrapped in parentheses)
+# 3. : subject   → Required, brief description (space after colon)
+# 4. body        → Optional, detailed description (blank line after header)
+# 5. footer      → Optional, notes (blank line after body)
+#
+
 rules:
-  # Allowed commit types (customizable)
-  allowed_types:
-    - feat # New feature
-    - fix # Bug fix
-    - docs # Documentation update
-    - style # Code style adjustments
-    - refactor # Code refactoring
-    - test # Test related
-    - chore # Maintenance tasks
+  # Type validation module
+  type:
+    enabled: true
+    config:
+      allow_custom_types: false # Whether to allow unlisted types
+      allowed_types: &base_types
+        - feat # New feature
+        - fix # Bug fix
+        - docs # Documentation
+        - style # Code style
+        - refactor # Code refactor
+        - test # Test related
+        - chore # Maintenance
+
+  ########################################################################
+  ## Warning: The following content is not currently supported          ##
+  ########################################################################
+
+  # Scope validation module
+  scope:
+    enabled: false
+    config:
+      allow_empty: true # Allow empty scope
+      allow_custom_scopes: false # Allow custom scopes
+      allowed_scopes: &base_scopes
+        - core
+        - cli
+        - ui
+        - docs
+        - test
+
+  # Subject validation
+  subject:
+    enabled: false
+    config:
+      pre_whitespace: true # Require space after colon
+      min_length: 5
+      max_length: 72
+
+  # Body format validation
+  body:
+    enabled: false
+    config:
+      blank_line_at_start: true
+      blank_lines_number: 1
+      max_line_length: 100
+
+  # Footer validation
+  footer:
+    enabled: false
+    config:
+      allowed_keys: &footer_keys
+        - BREAKING CHANGE # Must include colon and uppercase
+        - Closes
+        - Refs
+        - Fixes
+        - Resolves
