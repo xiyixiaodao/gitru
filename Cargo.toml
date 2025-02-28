@@ -9,7 +9,7 @@ repository = "https://github.com/xiyixiaodao/gitru"
 keywords = [
     "git-hooks",
     "conventional-commits",
-    "commit-validation ",
+    "commit-validation",
     "rust-cli",
     "devops-automation",
 ]
