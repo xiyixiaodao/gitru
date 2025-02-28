@@ -1,12 +1,18 @@
 [package]
 name = "gitru"
-version = "0.0.2"
+version = "0.0.3"
 edition = "2021"
 authors = ["xiyi <xiyixiaodao@outlook.com>"]
 description = "Git commit message validator with configurable rules"
 license = "MIT"
 repository = "https://github.com/xiyixiaodao/gitru"
-keywords = ["git", "commit", "commit-msg", "hook", "validation"]
+keywords = [
+    "git-hooks",
+    "conventional-commits",
+    "commit-validation ",
+    "rust-cli",
+    "devops-automation",
+]
 categories = ["development-tools"]
 
 [profile.release]
