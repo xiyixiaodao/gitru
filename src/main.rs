@@ -2,7 +2,7 @@ use crate::install::init_commit_msg_rule;
 use clap::Parser;
 use cli::{Cli, Hooks};
 use install::install_commit_msg_hook;
-use util::{enable_old_windows_color_support, init_tracing_once};
+use util::init_tracing_once;
 
 mod cli;
 mod commit_msg;
@@ -14,7 +14,7 @@ mod validate;
 fn main() {
     // Enable ANSI color support for legacy Windows10 console
     #[cfg(windows)]
-    enable_old_windows_color_support();
+    util::enable_old_windows_color_support();
 
     // Initialize global logging system
     init_tracing_once();

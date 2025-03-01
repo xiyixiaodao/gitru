@@ -1,5 +1,6 @@
 /// Enables ANSI escape sequence support for legacy Windows10 consoles,
 /// Invoke this function at the program entry point (main()) for backward compatibility.
+#[cfg(windows)]
 pub fn enable_old_windows_color_support() {
     use winapi::um::{
         consoleapi::SetConsoleMode, processenv::GetStdHandle,
