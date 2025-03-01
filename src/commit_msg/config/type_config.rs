@@ -1,64 +1,11 @@
 use colored::Colorize;
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Deserialize, Serialize)]
-pub struct CommitMsgRule {
-    pub rules: RuleSet,
-}
-
-#[derive(Debug, Deserialize, Serialize)]
-pub struct RuleSet {
-    // type is the rust keyword,type_rule is used instead of type in yaml
-    #[serde(rename = "type")]
-    pub type_rule: ValidationRule<TypeConfig>,
-    pub scope: ValidationRule<ScopeConfig>,
-    pub subject: ValidationRule<SubjectConfig>,
-    pub body: ValidationRule<BodyConfig>,
-    pub footer: ValidationRule<FooterConfig>,
-}
-
-// Generic validation rule structure
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ValidationRule<T> {
-    pub enabled: bool,
-    pub config: T,
-}
-
 // Type validation configuration
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TypeConfig {
     pub allow_custom_types: bool,
     pub allowed_types: Vec<String>,
-}
-
-// Scope validation configuration
-#[derive(Debug, Deserialize, Serialize)]
-pub struct ScopeConfig {
-    pub allow_empty: bool,
-    pub allow_custom_scopes: bool,
-    pub allowed_scopes: Vec<String>,
-}
-
-// Subject validation configuration
-#[derive(Debug, Deserialize, Serialize)]
-pub struct SubjectConfig {
-    pub pre_whitespace: bool,
-    pub min_length: u8,
-    pub max_length: u8,
-}
-
-// Body validation configuration
-#[derive(Debug, Deserialize, Serialize)]
-pub struct BodyConfig {
-    pub blank_line_at_start: bool,
-    pub blank_lines_number: u8,
-    pub max_line_length: u8,
-}
-
-// Footer validation configuration
-#[derive(Debug, Deserialize, Serialize)]
-pub struct FooterConfig {
-    pub allowed_keys: Vec<String>,
 }
 
 impl TypeConfig {
@@ -68,7 +15,7 @@ impl TypeConfig {
             .lines()
             .find(|line| !line.trim_start().starts_with('#') && !line.trim().is_empty())
             .unwrap_or_else(|| {
-                eprintln!("Error: Commit message cannot be empty");
+                eprintln!("{}", "Error: Commit message cannot be empty".red());
                 std::process::exit(1);
             });
 
@@ -85,7 +32,7 @@ impl TypeConfig {
                 "{}",
                 "Valid format example: feat: Add new feature".bright_cyan()
             );
-            std::process::exit(1);
+            return false;
         }
 
         // Part before colon
@@ -100,7 +47,7 @@ impl TypeConfig {
                 "{}",
                 "Valid format example: feat: Add new feature".bright_cyan()
             );
-            std::process::exit(1);
+            return false;
         }
 
         // Allow custom types, return directly
@@ -143,9 +90,12 @@ impl TypeConfig {
                 || scope_component == ")"
                 || !scope_component.contains(")")
             {
-                let e = format!("\nError: Commit type '{}' not allowed", type_segment).red();
-                eprintln!("{}", e);
-                eprintln!("Allowed types:\n{}", self.allowed_types.join("\n").green());
+                eprintln!(
+                    "{}",
+                    format!("Error: Commit type '{}' not allowed", type_segment).red()
+                );
+                eprintln!("Allowed types:");
+                eprintln!("{}", self.allowed_types.join("\n").green());
                 return false;
             }
 

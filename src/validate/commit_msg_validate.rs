@@ -1,6 +1,8 @@
 use std::fs;
 
-use super::commit_msg_rule::CommitMsgRule;
+use colored::Colorize;
+
+use crate::commit_msg::CommitMsgRule;
 
 pub fn get_commit_msg_rule(rule_path: &str) -> String {
     fs::read_to_string(rule_path).unwrap_or_else(|_| {
@@ -21,7 +23,9 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
     let rule_content = get_commit_msg_rule(rule_path);
 
     let commit_msg_rule: CommitMsgRule = serde_yaml::from_str(&rule_content).unwrap();
+
     // Validate commit message
+    // Validate type
     if commit_msg_rule.rules.type_rule.enabled {
         let type_validation_passed = commit_msg_rule
             .rules
@@ -29,8 +33,9 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
             .config
             .validate_type(&commit_msg);
         if !type_validation_passed {
-            eprintln!("Error: Invalid type !");
             std::process::exit(1);
+        } else {
+            println!("{}", "Type validation passed!".green());
         }
     }
 }
