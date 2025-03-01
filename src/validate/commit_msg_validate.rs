@@ -33,9 +33,25 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
             .config
             .validate_type(&commit_msg);
         if !type_validation_passed {
+            eprintln!("{}", "Type validation failed!".red());
             std::process::exit(1);
         } else {
             println!("{}", "Type validation passed!".green());
+        }
+    }
+
+    // Validate scope
+    if commit_msg_rule.rules.scope.enabled {
+        let scope_validation_passed = commit_msg_rule
+            .rules
+            .scope
+            .config
+            .validate_scope(&commit_msg);
+        if !scope_validation_passed {
+            eprintln!("{}", "Scope validation failed!".red());
+            std::process::exit(1);
+        } else {
+            println!("{}", "Scope validation passed!".green());
         }
     }
 }
