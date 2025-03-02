@@ -54,4 +54,19 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
             println!("{}", "Scope validation passed!".green());
         }
     }
+
+    // Validate subject
+    if commit_msg_rule.rules.subject.enabled {
+        let subject_validation_passed = commit_msg_rule
+            .rules
+            .subject
+            .config
+            .validate_subject(&commit_msg);
+        if !subject_validation_passed {
+            eprintln!("{}", "Subject validation failed!".red());
+            std::process::exit(1);
+        } else {
+            println!("{}", "Subject validation passed!".green());
+        }
+    }
 }

@@ -1,6 +1,6 @@
 [package]
 name = "gitru"
-version = "0.0.5"
+version = "0.0.6"
 edition = "2021"
 authors = ["xiyi <xiyixiaodao@outlook.com>"]
 description = "Git commit message validator with configurable rules"
