@@ -29,7 +29,6 @@ jobs:
           toolchain: stable
           targets: ${{ matrix.target }}
           components: clippy, rustfmt
-          profile: minimal
 
       - name: Cache dependencies
         uses: actions/cache@v3
@@ -57,3 +56,6 @@ jobs:
 
       - name: Build project
         run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Install binary
+        run: cargo install --path . --target ${{ matrix.target }}
