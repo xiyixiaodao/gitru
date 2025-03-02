@@ -51,17 +51,17 @@ rules:
         - docs
         - test
 
+  # Subject validation
+  subject:
+    enabled: true
+    config:
+      require_space_after_colon: true
+      min_length: 5
+      max_length: 72
+
   ########################################################################
   ## Warning: The following content is not currently supported          ##
   ########################################################################
-
-  # Subject validation
-  subject:
-    enabled: false
-    config:
-      pre_whitespace: true # Require space after colon
-      min_length: 5
-      max_length: 72
 
   # Body format validation
   body:

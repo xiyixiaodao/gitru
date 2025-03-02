@@ -29,7 +29,7 @@ rules:
     enabled: true
     config:
       allow_custom_types: false # Whether to allow unlisted types
-      allowed_types: &base_types
+      allowed_types:
         - feat # New feature
         - fix # Bug fix
         - docs # Documentation
@@ -38,17 +38,13 @@ rules:
         - test # Test related
         - chore # Maintenance
 
-  ########################################################################
-  ## Warning: The following content is not currently supported          ##
-  ########################################################################
-
   # Scope validation module
   scope:
-    enabled: false
+    enabled: true
     config:
-      allow_empty: true # Allow empty scope
+      allow_empty: true # Allow scope absence
       allow_custom_scopes: false # Allow custom scopes
-      allowed_scopes: &base_scopes
+      allowed_scopes:
         - core
         - cli
         - ui
@@ -57,11 +53,15 @@ rules:
 
   # Subject validation
   subject:
-    enabled: false
+    enabled: true
     config:
-      pre_whitespace: true # Require space after colon
+      require_space_after_colon: true
       min_length: 5
       max_length: 72
+
+  ########################################################################
+  ## Warning: The following content is not currently supported          ##
+  ########################################################################
 
   # Body format validation
   body:
@@ -75,7 +75,7 @@ rules:
   footer:
     enabled: false
     config:
-      allowed_keys: &footer_keys
+      allowed_keys:
         - BREAKING CHANGE # Must include colon and uppercase
         - Closes
         - Refs
