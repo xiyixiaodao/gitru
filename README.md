@@ -2,7 +2,7 @@
 
 ## Git Commit Message Validation Tool
 > Enforces commit message conventions through configurable rules .  
-(currently supports type and scope validation, Additional features will be implemented gradually.)
+(currently supports type、scope and subject validation, Additional features will be implemented gradually.)
 
 ### Installation
 
