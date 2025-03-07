@@ -4,6 +4,9 @@
 # Purpose: Invoke custom commit message validator
 # Note: This file is typically initialized by the program and requires no manual modification
 
+# Fix environment variables detection issue for Cargo when submitting via git GUI on Linux
+export PATH="${CARGO_HOME:-$HOME/.cargo}/bin:$PATH"
+
 # Path to temporary commit message file
 COMMIT_MSG_FILE=$1
 
