@@ -48,4 +48,4 @@ rules:
   subject:
     require_space_after_colon: true  #true is default value
     min_length: 5
-    max_length: 10
+    max_length: 72

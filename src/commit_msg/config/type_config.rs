@@ -52,8 +52,8 @@ impl TypeConfig {
         if allowed_types.contains(&typ.to_owned()) {
             true
         } else {
-            eprintln!("{}", format!("your type : {:?}", typ).blue());
-            eprintln!("{}", format!("allowed_types :{:?}", allowed_types).blue());
+            eprintln!("{}", format!("your type : {typ:?}").blue());
+            eprintln!("{}", format!("allowed_types :{allowed_types:?}").blue());
             false
         }
     }

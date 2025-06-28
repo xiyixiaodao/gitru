@@ -13,7 +13,7 @@ pub fn get_commit_msg_rule(rule_path: &str) -> String {
 
 fn get_commit_msg(msg_path: &str) -> String {
     fs::read_to_string(msg_path).unwrap_or_else(|_| {
-        eprintln!("Error: Failed to read commit message file {}", msg_path);
+        eprintln!("Error: Failed to read commit message file {msg_path}");
         std::process::exit(1);
     })
 }

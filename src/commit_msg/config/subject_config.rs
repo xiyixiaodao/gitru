@@ -51,8 +51,7 @@ impl SubjectConfig {
             eprintln!(
                 "{}",
                 format!(
-                    "subject length [{}] is not within the specified range:{}————{}",
-                    subject_length, min_length, max_length
+                    "subject length [{subject_length}] is not within the specified range:{min_length}————{max_length}"
                 )
                 .blue()
             )
