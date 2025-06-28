@@ -26,58 +26,26 @@
 rules:
   # Type validation module
   type:
-    enabled: true
-    config:
-      allow_custom_types: false # Whether to allow unlisted types
-      allowed_types:
-        - feat # New feature
-        - fix # Bug fix
-        - docs # Documentation
-        - style # Code style
-        - refactor # Code refactor
-        - test # Test related
-        - chore # Maintenance
+    allowed_types:
+      - feat # New feature
+      - fix # Bug fix
+      - docs # Documentation
+      - style # Code style
+      - refactor # Code refactor
+      - test # Test related
+      - chore # Maintenance
 
   # Scope validation module
   scope:
-    enabled: true
-    config:
-      allow_empty: true # Allow scope absence
-      allow_custom_scopes: false # Allow custom scopes
-      allowed_scopes:
-        - core
-        - cli
-        - ui
-        - docs
-        - test
+    allowed_scopes:
+      - core
+      - cli
+      - ui
+      - docs
+      - test
 
-  # Subject validation
+  # Subject validation module
   subject:
-    enabled: true
-    config:
-      require_space_after_colon: true
-      min_length: 5
-      max_length: 72
-
-  ########################################################################
-  ## Warning: The following content is not currently supported          ##
-  ########################################################################
-
-  # Body format validation
-  body:
-    enabled: false
-    config:
-      blank_line_at_start: true
-      blank_lines_number: 1
-      max_line_length: 100
-
-  # Footer validation
-  footer:
-    enabled: false
-    config:
-      allowed_keys:
-        - BREAKING CHANGE # Must include colon and uppercase
-        - Closes
-        - Refs
-        - Fixes
-        - Resolves
+    require_space_after_colon: true  #true is default value
+    min_length: 5
+    max_length: 10
