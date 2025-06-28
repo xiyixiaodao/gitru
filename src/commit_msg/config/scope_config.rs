@@ -1,88 +1,79 @@
+use crate::commit_msg::get_commit_msg_first_line;
 use colored::Colorize;
+use regex::Regex;
 use serde::{Deserialize, Serialize};
+use tracing::{debug, info};
 
 // Scope validation configuration
 #[derive(Debug, Deserialize, Serialize)]
 pub struct ScopeConfig {
-    pub allow_empty: bool,
-    pub allow_custom_scopes: bool,
-    pub allowed_scopes: Vec<String>,
+    pub allowed_scopes: Option<Vec<String>>,
 }
 
 impl ScopeConfig {
     pub fn validate_scope(&self, commit_msg: &str) -> bool {
+        if self
+            .allowed_scopes
+            .as_ref()
+            .is_none_or(|scopes| scopes.is_empty())
+        {
+            eprintln!("{}", "allowed scopes is empty".red());
+            return false;
+        }
+
+        let allowed_scopes = self.allowed_scopes.as_ref().unwrap();
+
+        //avoid allowed_scopes:[""]
+        if allowed_scopes.iter().all(|s| s.is_empty()) {
+            info!("The allowed_scopes {:?}", allowed_scopes);
+            eprintln!(
+                "{}",
+                "the allowed_scopes cannot be empty, check the yaml file ".red()
+            );
+            return false;
+        }
+
         // Extract valid first line (skip comments/empty lines)
-        let first_line = commit_msg
-            .lines()
-            .find(|line| !line.trim_start().starts_with('#') && !line.trim().is_empty())
-            .unwrap_or_else(|| {
-                eprintln!("{}", "Error: Commit message cannot be empty".red());
-                std::process::exit(1);
-            });
+        let first_line = get_commit_msg_first_line(commit_msg);
 
-        // Split type declaration and subject
-        let type_scope_subject: Vec<&str> = first_line.splitn(2, ':').collect();
+        let allowed_scopes = self.allowed_scopes.as_ref().unwrap();
 
-        // When validating scope, type has already been validated
-        let type_scope = type_scope_subject.first().unwrap();
+        // feat(): add a new feature .  is not allowed
+        let regex = Regex::new(r"^[^()]*(?<scope>[(|)][^:]*):.*").unwrap();
+        debug!("scope capture: {:?}", regex.captures(first_line));
 
-        // Lone '(' or ')' already handled in type validation
-        // `()` present
-        if type_scope.contains('(') && type_scope.contains(')') {
-            let scope = type_scope.split('(').nth(1).unwrap().split(')').next();
+        let Some(scope_and_parenthesis_capture) = regex.captures(first_line) else {
+            info!("allowed scope: {:?}", allowed_scopes);
+            eprintln!("{}", "your scope is  empty".blue());
+            return false;
+        };
 
-            if self.allow_empty {
-                // If scope is missing and allow_empty is true
-                if scope.is_none() {
-                    true
-                } else {
-                    // Scope exists, custom scopes allowed
-                    if self.allow_custom_scopes {
-                        // Non-empty is acceptable
-                        !scope.unwrap().trim().is_empty()
-                    } else {
-                        // Custom scopes not allowed, scope must be in allowed_scopes
-                        if !self.allowed_scopes.contains(&scope.unwrap().to_string()) {
-                            eprintln!(
-                                "{}",
-                                format!("Error: Scope '{}' is not allowed", scope.unwrap()).red()
-                            );
-                            eprintln!("Allowed scopes:");
-                            eprintln!("{}", self.allowed_scopes.join("\n").green());
-                            return false;
-                        }
-                        true
-                    }
-                }
-            } else {
-                // Scope must be present
+        let scope_with_parenthesis = &scope_and_parenthesis_capture["scope"];
 
-                // Scope exists, custom scopes allowed
-                if self.allow_custom_scopes {
-                    // Non-empty is acceptable
-                    !scope.unwrap().trim().is_empty()
-                } else {
-                    // Custom scopes not allowed, scope must be in allowed_scopes
-                    if !self.allowed_scopes.contains(&scope.unwrap().to_string()) {
-                        eprintln!(
-                            "{}",
-                            format!("Error: Scope '{}' is not allowed", scope.unwrap()).red()
-                        );
-                        eprintln!("Allowed scopes:");
-                        eprintln!("{}", self.allowed_scopes.join("\n").green());
-                        return false;
-                    }
-                    true
-                }
-            }
+        if !scope_with_parenthesis.starts_with("(") {
+            eprintln!("{}", "the left parenthesis is missing".blue());
+            return false;
+        }
+
+        if !scope_with_parenthesis.ends_with(")") {
+            eprintln!("{}", "the right parenthesis is missing".blue());
+            return false;
+        }
+
+        debug!("scope_with_parenthesis:{:?}", scope_with_parenthesis);
+
+        // Remove the left and right parentheses
+        let scope_with_parenthesis = scope_with_parenthesis.trim_start_matches("(");
+        let scope = scope_with_parenthesis.trim_end_matches(")");
+
+        info!("your scope {:?}", scope);
+
+        if allowed_scopes.contains(&scope.to_owned()) {
+            true
         } else {
-            // `()` missing, no scope, allow_empty is true
-            if self.allow_empty {
-                true
-            } else {
-                eprintln!("{}", "Error: Scope is required".red());
-                false
-            }
+            eprintln!("{}", format!("your scope :{:?}", scope).blue());
+            eprintln!("{}", format!("allowed scopes {:?}", allowed_scopes).blue());
+            false
         }
     }
 }
@@ -94,19 +85,15 @@ mod tests {
     #[test]
     fn test_validate_scope1() {
         let scope_config = ScopeConfig {
-            allow_empty: false,
-            allow_custom_scopes: false,
-            allowed_scopes: vec!["test".to_string()],
+            allowed_scopes: Some(vec!["test".to_string()]),
         };
-        assert!(!scope_config.validate_scope("feat(test123): test"));
+        assert!(!scope_config.validate_scope("feat(test123): add feature"));
     }
 
     #[test]
     fn test_validate_scope2() {
         let scope_config = ScopeConfig {
-            allow_empty: false,
-            allow_custom_scopes: false,
-            allowed_scopes: vec!["test".to_string()],
+            allowed_scopes: Some(vec!["test".to_string()]),
         };
         assert!(scope_config.validate_scope("feat(test): test"));
     }
@@ -114,10 +101,19 @@ mod tests {
     #[test]
     fn test_validate_scope3() {
         let scope_config = ScopeConfig {
-            allow_empty: true,
-            allow_custom_scopes: false,
-            allowed_scopes: vec!["test".to_string()],
+            allowed_scopes: Some(vec!["test".to_string()]),
         };
-        assert!(!scope_config.validate_scope("feat(java): add a new feature"));
+        assert!(!scope_config.validate_scope("feat(rust): add a new feature"));
+    }
+
+    #[test]
+    fn test_validate_scope4() {
+        let scope_config = ScopeConfig {
+            allowed_scopes: Some(vec!["test".to_string()]),
+        };
+        assert!(!scope_config.validate_scope("feat(): add a new feature"));
+        assert!(!scope_config.validate_scope("feat(: add a new feature"));
+        assert!(!scope_config.validate_scope("feat): add a new feature"));
+        assert!(!scope_config.validate_scope("feat(te: add a new feature"));
     }
 }
