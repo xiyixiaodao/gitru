@@ -71,8 +71,8 @@ impl ScopeConfig {
         if allowed_scopes.contains(&scope.to_owned()) {
             true
         } else {
-            eprintln!("{}", format!("your scope :{:?}", scope).blue());
-            eprintln!("{}", format!("allowed scopes {:?}", allowed_scopes).blue());
+            eprintln!("{}", format!("your scope :{scope:?}").blue());
+            eprintln!("{}", format!("allowed scopes : {allowed_scopes:?}").blue());
             false
         }
     }
