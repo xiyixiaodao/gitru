@@ -1,4 +1,5 @@
 use crate::commit_msg::get_commit_msg_first_line;
+use crate::config::COMMIT_MSG_RULE_NAME;
 use colored::Colorize;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -17,7 +18,10 @@ impl ScopeConfig {
             .as_ref()
             .is_none_or(|scopes| scopes.is_empty())
         {
-            eprintln!("{}", "allowed scopes is empty".red());
+            eprintln!(
+                "{}",
+                format!("allowed scopes is empty in the file: {COMMIT_MSG_RULE_NAME}").blue()
+            );
             return false;
         }
 
@@ -28,7 +32,7 @@ impl ScopeConfig {
             info!("The allowed_scopes {:?}", allowed_scopes);
             eprintln!(
                 "{}",
-                "the allowed_scopes cannot be empty, check the yaml file ".red()
+                format!("allowed_scopes is empty, check the file: {COMMIT_MSG_RULE_NAME}").blue()
             );
             return false;
         }
@@ -71,7 +75,7 @@ impl ScopeConfig {
         if allowed_scopes.contains(&scope.to_owned()) {
             true
         } else {
-            eprintln!("{}", format!("your scope :{scope:?}").blue());
+            eprintln!("{}", format!("your scope : {scope:?}").blue());
             eprintln!("{}", format!("allowed scopes : {allowed_scopes:?}").blue());
             false
         }

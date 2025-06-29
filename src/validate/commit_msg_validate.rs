@@ -73,7 +73,7 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
         // eprintln!("{}", "commit-msg invalid".red());
         println!(
             "{}",
-            "a regular commit-msg may like: feat(core): add a new feature".blue()
+            "a regular commit-msg may like: type(optional scope): subject".blue()
         );
         std::process::exit(1);
     }
