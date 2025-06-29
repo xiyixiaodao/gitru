@@ -38,15 +38,15 @@ rules:
 
   # Scope validation module
   scope:
-  # allowed_scopes:
-  #   - core
-  #   - cli
-  #   - ui
-  #   - docs
-  #   - test
+#   allowed_scopes:
+#     - core()
+#     - cli
+#     - ui
+#     - docs
+#     - test
 
   # Subject validation module
   subject:
     require_space_after_colon: true  #true is default value
-    min_length: 5
-    max_length: 72
+    min_length: 5   # default min_length is 1
+    max_length: 72  # default max_length is 72

@@ -20,7 +20,7 @@ impl TypeConfig {
         {
             eprintln!(
                 "{}",
-                format!("allowed types is empty in the file: {COMMIT_MSG_RULE_NAME}").blue()
+                format!("allowed types is empty in the file: {COMMIT_MSG_RULE_NAME}").bright_blue()
             );
             return false;
         }
@@ -39,14 +39,15 @@ impl TypeConfig {
             info!("The allowed_types  {:?}", allowed_types);
             eprintln!(
                 "{}",
-                format!("allowed_types is empty, check the file: {COMMIT_MSG_RULE_NAME}").blue()
+                format!("allowed_types is empty, check the file: {COMMIT_MSG_RULE_NAME}")
+                    .bright_blue()
             );
             return false;
         }
 
         let regex = Regex::new(r"^(?<type>[^()]+)(\(?[^:]*)?:.*").unwrap();
         let Some(type_capture) = regex.captures(first_line) else {
-            eprintln!("{}", "no type found".blue());
+            eprintln!("{}", "no type found".bright_blue());
             return false;
         };
 
@@ -56,8 +57,11 @@ impl TypeConfig {
         if allowed_types.contains(&typ.to_owned()) {
             true
         } else {
-            eprintln!("{}", format!("your type : {typ:?}").blue());
-            eprintln!("{}", format!("allowed_types :{allowed_types:?}").blue());
+            eprintln!("{}", format!("your type : {typ:?}").bright_blue());
+            eprintln!(
+                "{}",
+                format!("allowed_types :{allowed_types:?}").bright_blue()
+            );
             false
         }
     }
