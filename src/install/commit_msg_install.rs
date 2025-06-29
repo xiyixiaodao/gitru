@@ -15,15 +15,15 @@ pub fn install_commit_msg_hook() {
     let current_dir = std::env::current_dir().expect("Failed to get current directory");
     debug!("Current directory: {}", current_dir.display());
 
-    // Build .git/hooks path (cross-platform compatible)
-    let git_hooks_path = current_dir.join(".git").join("hooks").join("commit-msg");
-    debug!("Hook file path: {}", git_hooks_path.display());
-
     // git repository existence check
     if !current_dir.join(".git").exists() {
         eprintln!("{}", "Error: Not a git repository,init it first".red());
         std::process::exit(1);
     }
+
+    // Build .git/hooks path (cross-platform compatible)
+    let git_hooks_path = current_dir.join(".git").join("hooks").join("commit-msg");
+    debug!("Hook file path: {}", git_hooks_path.display());
 
     if !git_hooks_path.exists() {
         // Create parent directories (newly added)

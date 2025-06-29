@@ -17,6 +17,10 @@ pub enum CommitMsgAction {
     // #[command(name = "ii")]
     II,
 
+    /// Uninstall hook from .git/hooks directory
+    // #[command(name = "uninstall")]
+    Uninstall,
+
     /// Validate if commit message complies with rules
     // #[command(name = "validate")]
     Validate {

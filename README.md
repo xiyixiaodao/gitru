@@ -45,8 +45,7 @@ After installation:
 Customize validation rules by editing `.commit-msg-rule.yaml`.  
 You can optionally modify, delete, or comment out the options that do not require validation.
 
-
-Commit validation example:
+### Commit validation example:
 
 ```bash
 git commit -m "feat: add new API endpoint"
@@ -57,6 +56,14 @@ Validation Failure Example:
 
 ```bash
 git commit -m "add feature"
-git commit -m "feat(): add feature"
 ```
 
+### Uninstall
+
+remove `commit-msg` hook from `.git/hooks` directory: 
+
+```shell
+gitru commit-msg uninstall
+```
+
+remove `.commit-msg-rule.yaml` file manually .
