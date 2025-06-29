@@ -23,7 +23,7 @@ impl SubjectConfig {
         let regex = Regex::new(r"^.+:(?<subject>.+)").unwrap();
 
         let Some(subject_capture) = regex.captures(first_line) else {
-            eprintln!("{}", "no subject found".blue());
+            eprintln!("{}", "no subject found".bright_blue());
             return false;
         };
 
@@ -32,15 +32,18 @@ impl SubjectConfig {
 
         // Whether a space is required
         if require_space_after_colon && !subject.starts_with(" ") {
-            eprintln!("{}", "subject need space in the first".blue());
+            eprintln!("{}", "subject need space in the first".bright_blue());
             return false;
         } else if !require_space_after_colon && subject.starts_with(" ") {
-            eprintln!("{}", "subject did not need space in the first".blue());
+            eprintln!(
+                "{}",
+                "subject did not need space in the first".bright_blue()
+            );
             return false;
         }
 
         let min_length = self.min_length.unwrap_or(1) as usize;
-        let max_length = self.max_length.unwrap_or(100) as usize;
+        let max_length = self.max_length.unwrap_or(72) as usize;
 
         // Count of non-Latin characters
         let subject_length = subject.trim().chars().count();
@@ -53,7 +56,7 @@ impl SubjectConfig {
                 format!(
                     "subject length [{subject_length}] is not within the specified range:{min_length}————{max_length}"
                 )
-                .blue()
+                .bright_blue()
             )
         }
 

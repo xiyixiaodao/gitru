@@ -1,5 +1,6 @@
 use std::fs;
 
+use crate::commit_msg;
 use crate::commit_msg::CommitMsgRule;
 use colored::Colorize;
 use tracing::info;
@@ -26,12 +27,12 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
         .expect("Failed to parse .commit-msg-rule.yaml; check the file format");
 
     if commit_msg_rule.rules.is_none() {
-        eprintln!("Error: commit-msg-rule.yaml contains no rules");
+        eprintln!("{}", "Error: commit-msg-rule.yaml contains no rules".red());
         std::process::exit(1);
     }
 
     let mut type_validation_passed = true;
-    let mut scope_validation_passed = true;
+    let scope_validation_passed;
     let mut subject_validation_passed = true;
 
     // Validate commit-message
@@ -46,11 +47,18 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
         }
     }
 
-    // Validate scope
+    // Validate scope with config
     if let Some(scope_config) = &commit_msg_rule.rules.as_ref().unwrap().scope {
         info!("scope_config:{:?}", scope_config);
 
-        scope_validation_passed = scope_config.validate_scope(&commit_msg);
+        scope_validation_passed = scope_config.validate_scope_with_config(&commit_msg);
+        if !scope_validation_passed {
+            eprintln!("{}", "Scope validation failed!".red());
+        }
+    } else {
+        // Validate scope without config
+        scope_validation_passed =
+            commit_msg::ScopeConfig::validate_scope_without_config(&commit_msg);
         if !scope_validation_passed {
             eprintln!("{}", "Scope validation failed!".red());
         }
@@ -71,10 +79,10 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
         std::process::exit(0);
     } else {
         // eprintln!("{}", "commit-msg invalid".red());
-        println!(
-            "{}",
-            "a regular commit-msg may like: type(optional scope): subject".blue()
-        );
+        eprintln!("\na regular commit-msg may like: ");
+        eprintln!("{}", "type: subject".green());
+        eprintln!("OR");
+        eprintln!("{}", "type(scope): subject".green());
         std::process::exit(1);
     }
 }

@@ -3,6 +3,7 @@ mod config;
 
 use colored::Colorize;
 pub use commit_msg_rule::CommitMsgRule;
+pub use config::ScopeConfig;
 
 // Extract valid first line (skip comments/empty lines)
 fn get_commit_msg_first_line(commit_msg: &str) -> &str {
