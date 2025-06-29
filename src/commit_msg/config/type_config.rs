@@ -1,4 +1,5 @@
 use crate::commit_msg::get_commit_msg_first_line;
+use crate::config::COMMIT_MSG_RULE_NAME;
 use colored::Colorize;
 use regex::Regex;
 use serde::{Deserialize, Serialize};
@@ -17,7 +18,10 @@ impl TypeConfig {
             .as_ref()
             .is_none_or(|types| types.is_empty())
         {
-            eprintln!("{}", "allowed types is empty".red());
+            eprintln!(
+                "{}",
+                format!("allowed types is empty in the file: {COMMIT_MSG_RULE_NAME}").blue()
+            );
             return false;
         }
 
@@ -35,14 +39,14 @@ impl TypeConfig {
             info!("The allowed_types  {:?}", allowed_types);
             eprintln!(
                 "{}",
-                "the allowed_types cannot be empty, check the yaml file ".red()
+                format!("allowed_types is empty, check the file: {COMMIT_MSG_RULE_NAME}").blue()
             );
             return false;
         }
 
         let regex = Regex::new(r"^(?<type>[^()]+)(\(?[^:]*)?:.*").unwrap();
         let Some(type_capture) = regex.captures(first_line) else {
-            eprintln!("no type found");
+            eprintln!("{}", "no type found".blue());
             return false;
         };
 

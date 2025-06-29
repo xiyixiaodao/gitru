@@ -24,6 +24,7 @@
 #
 
 rules:
+  # You can optionally modify, delete, or comment out the options that do not require validation.
   # Type validation module
   type:
     allowed_types:
@@ -37,12 +38,12 @@ rules:
 
   # Scope validation module
   scope:
-    allowed_scopes:
-      - core
-      - cli
-      - ui
-      - docs
-      - test
+  # allowed_scopes:
+  #   - core
+  #   - cli
+  #   - ui
+  #   - docs
+  #   - test
 
   # Subject validation module
   subject:

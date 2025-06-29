@@ -23,7 +23,7 @@ impl SubjectConfig {
         let regex = Regex::new(r"^.+:(?<subject>.+)").unwrap();
 
         let Some(subject_capture) = regex.captures(first_line) else {
-            eprintln!("no subject found");
+            eprintln!("{}", "no subject found".blue());
             return false;
         };
 

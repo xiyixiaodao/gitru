@@ -38,12 +38,12 @@ rules:
 
   # Scope validation module
   scope:
-    allowed_scopes:
-      - core
-      - cli
-      - ui
-      - docs
-      - test
+  # allowed_scopes:
+  #   - core
+  #   - cli
+  #   - ui
+  #   - docs
+  #   - test
 
   # Subject validation module
   subject:
