@@ -1,4 +1,4 @@
-use crate::install::init_commit_msg_rule;
+use crate::install::{init_commit_msg_rule, remove_commit_msg_hook};
 use clap::Parser;
 use cli::{Cli, Hooks};
 use install::install_commit_msg_hook;
@@ -40,6 +40,7 @@ fn main() {
             } => {
                 validate::validate_msg(msg_path.as_str(), rule_path.as_str());
             }
+            cli::CommitMsgAction::Uninstall => remove_commit_msg_hook(),
         },
     }
 }
