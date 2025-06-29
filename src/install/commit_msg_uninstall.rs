@@ -26,10 +26,7 @@ pub fn remove_commit_msg_hook() {
                 std::process::exit(0);
             }
             Err(e) => {
-                eprintln!(
-                    "{}",
-                    format!("Failed to remove commit-msg hook: {}", e).red()
-                );
+                eprintln!("{}", format!("Failed to remove commit-msg hook: {e}").red());
                 std::process::exit(1);
             }
         }
