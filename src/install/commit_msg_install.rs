@@ -61,5 +61,8 @@ pub fn install_commit_msg_hook() {
         fs::set_permissions(&git_hooks_path, permissions).unwrap();
     }
 
-    println!("{}", "commit-msg hook installed successfully!".green());
+    println!(
+        "{}",
+        "commit-msg hook installed   at .git/hooks/commit-msg".green()
+    );
 }

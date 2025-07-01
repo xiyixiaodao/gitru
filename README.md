@@ -47,20 +47,28 @@ You can optionally modify, delete, or comment out the options that do not requir
 
 ### Commit validation example:
 
+Validation success Example:
+
 ```bash
 git commit -m "feat: add new API endpoint"
 git commit -m "feat(core): add new API endpoint"
 ```
 
-Validation Failure Example:
+Validation Failure Example:   
+(default config)
 
 ```bash
 git commit -m "add feature"
+git commit -m "feat: add"  # subject 'add' is too short
+git commit -m "feat:add feature" # need space default
+git commit -m "feat(): add feature"
+git commit -m "feat(: add feature"
+git commit -m "feat): add feature"
 ```
 
 ### Uninstall
 
-remove `commit-msg` hook from `.git/hooks` directory: 
+remove `commit-msg` hook from `.git/hooks` directory:
 
 ```shell
 gitru commit-msg uninstall
