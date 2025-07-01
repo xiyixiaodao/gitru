@@ -20,6 +20,8 @@ fn get_commit_msg(msg_path: &str) -> String {
 }
 
 pub fn validate_msg(msg_path: &str, rule_path: &str) {
+    println!("\ncommit-msg validation result: ");
+
     let commit_msg = get_commit_msg(msg_path);
     let rule_content = get_commit_msg_rule(rule_path);
 
@@ -78,7 +80,7 @@ pub fn validate_msg(msg_path: &str, rule_path: &str) {
         println!("{}", "Commit message validation successful!".green());
         std::process::exit(0);
     } else {
-        // eprintln!("{}", "commit-msg invalid".red());
+        eprintln!("\n{}", "Commit message validation failed, please modify the message according to the above prompts".red());
         eprintln!("\na regular commit-msg may like: ");
         eprintln!("{}", "type: subject".green());
         eprintln!("OR");

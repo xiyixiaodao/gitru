@@ -30,10 +30,4 @@ UP_TWO_LEVELS=$(cd "$(dirname "$0")/../.." && pwd)
 # Capture exit code
 VALIDATION_RESULT=$?
 
-# Handle validation result
-if [ $VALIDATION_RESULT -ne 0 ]; then
-    printf "\033[31m\nCommit message validation failed, please modify the message according to the above prompts.\033[0m\n" >&2
-    exit $VALIDATION_RESULT
-fi
-
-exit 0
+exit $VALIDATION_RESULT

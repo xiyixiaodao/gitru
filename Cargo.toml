@@ -1,6 +1,6 @@
 [package]
 name = "gitru"
-version = "0.0.10"
+version = "0.0.11"
 edition = "2021"
 authors = ["xiyi <xiyixiaodao@outlook.com>"]
 description = "Git commit message validator with configurable rules"
@@ -13,7 +13,7 @@ keywords = [
     "rust-cli",
     "devops-automation",
 ]
-categories = ["development-tools"]
+categories = ["development-tools","command-line-utilities"]
 
 [profile.release]
 # Enable Link-Time Optimization
