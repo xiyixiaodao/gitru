@@ -37,5 +37,8 @@ pub fn init_commit_msg_rule() {
         .write_all(COMMIT_MSG_RULE_CONTENT.as_bytes())
         .unwrap();
 
-    println!("{}", "commit-msg rule initialized successfully!".green());
+    println!(
+        "{}",
+        format!("commit-msg rule initialized at {COMMIT_MSG_RULE_NAME}").green()
+    );
 }
