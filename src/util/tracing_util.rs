@@ -7,7 +7,7 @@ fn init_tracing() {
     // Initialize logger with local time formatting and env-based filtering
     tracing_subscriber::fmt()
         .with_timer(fmt::time::LocalTime::rfc_3339())
-        .with_env_filter(EnvFilter::from_default_env())
+        .with_env_filter(EnvFilter::from_env("GITRU_LOG"))
         .init();
 }
 
