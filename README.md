@@ -45,6 +45,47 @@ After installation:
 Customize validation rules by editing `.commit-msg-rule.yaml`.  
 You can optionally modify, delete, or comment out the options that do not require validation.
 
+#### configuration file example:
+
+```yaml
+# Commit Message may like : .
+# ╔══════════════════════════════════════════════╗
+# ║    type(optional scope): subject             ║
+# ╚══════════════════════════════════════════════╝
+#
+# Structure explanation:
+# 1. type        → Required, commit type (feat/fix/docs etc)
+# 2. (scope)     → Optional, scope (wrapped in parentheses)
+# 3. : subject   → Required, brief description (space after colon)
+
+
+# Type validation module
+type:
+  allowed_types:
+    - feat
+    - fix
+    - docs
+    - style
+    - refactor
+    - test
+    - chore
+
+# Scope validation module
+scope:
+#    allowed_scopes:
+#      - core
+#      - cli
+#      - ui
+#      - docs
+#      - test
+
+# Subject validation module
+subject:
+  require_space_after_colon: true #true is default value
+  min_length: 2 # default min_length is 1
+  max_length: 72 # default max_length is 72
+```
+
 ### Commit validation example:
 
 Validation success Example:
@@ -58,8 +99,8 @@ Validation Failure Example:
 (default config)
 
 ```bash
-git commit -m "add feature"
-git commit -m "feat: add"  # subject 'add' is too short
+git commit -m "add feature" # type is missing
+git commit -m "feat: a" # subject 'a' is too short
 git commit -m "feat:add feature" # need space default
 git commit -m "feat(): add feature"
 git commit -m "feat(: add feature"
