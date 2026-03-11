@@ -1,9 +1,9 @@
 [package]
 name = "gitru"
-version = "0.2.0"
+version = "0.2.1"
 edition = "2021"
 authors = ["xiyi <xiyixiaodao@outlook.com>"]
-description = "Git commit message validator with configurable rules"
+description = "a lightweight, configurable Git commit message validation tool"
 license = "MIT"
 repository = "https://github.com/xiyixiaodao/gitru"
 keywords = [
