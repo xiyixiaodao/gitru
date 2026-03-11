@@ -1,6 +1,6 @@
 [package]
 name = "gitru"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["xiyi <xiyixiaodao@outlook.com>"]
 description = "Git commit message validator with configurable rules"
@@ -13,7 +13,7 @@ keywords = [
     "rust-cli",
     "devops-automation",
 ]
-categories = ["development-tools","command-line-utilities"]
+categories = ["development-tools", "command-line-utilities"]
 
 [profile.release]
 # Enable Link-Time Optimization
@@ -21,15 +21,11 @@ lto = true
 
 [dependencies]
 clap = { version = "4.5.60", features = ["derive"] }
-tracing = "0.1.44"
-tracing-subscriber = { version = "0.3.22", features = [
-    "local-time",
-    "env-filter",
-] }
-colored = "3.1.1"
-serde = { version = "1.0.228", features = ["derive"] }
-serde_yaml = "0.9.33"
 regex = "1.12.3"
+serde = { version = "1.0.228", features = ["derive"] }
+supports-color = "3.0.2"
+thiserror = "2.0.18"
+toml = "1.0.6"
 [target.'cfg(windows)'.dependencies]
 winapi = { version = "0.3.9", features = [
     "consoleapi",

@@ -1,0 +1,93 @@
+# Commit Message Validation Configuration Template
+# The Conventional Commits specification is a lightweight convention on top of commit messages.
+# For detailed content, please refer to:  https://www.conventionalcommits.org/en/v1.0.0/#summary
+# The commit message should be structured as follows:
+#
+# ╔═════════════════════════════════════════════════╗
+# ║          COMMIT FORMAT TEMPLATE                 ║
+# ╠═════════════════════════════════════════════════╣
+# ║    type(optional scope): subject                ║
+# ║                                                 ║
+# ║    [optional body]                              ║
+# ║                                                 ║
+# ║    [optional footer]                            ║
+# ║     - BREAKING CHANGE: xxxxx                    ║
+# ║     - Closes #issue                             ║
+# ╚═════════════════════════════════════════════════╝
+#
+# Structure explanation:
+# 1. type        → Required, commit type (feat/fix/docs etc.)
+# 2. scope       → Optional, scope (wrapped in parentheses)
+# 3. subject     → Required, brief description (space after colon)
+# 4. body        → Optional, detailed description (blank line after header)
+# 5. footer      → Optional, notes (blank line after body)
+
+
+# You can optionally modify, delete, or comment out the options that do not require validation.
+[global]
+version = "1.0.0"
+enable_validation = true
+# Skip validation when the first line of the commit message
+# is the following keywords.
+skip_validation_words = [
+    "--no-verify",
+    "SKIP",
+]
+
+
+[header]
+# Header section validation
+# Includes type, scope, and subject checks
+# Breaking change detection:
+# If `!` is added before the subject, it indicates a breaking change.
+# Example: `refactor(parser)!: change public API`
+
+[header.type]
+# Type validation module
+allowed_types = [
+    "feat", # New feature
+    "fix", # Bug fix
+    "docs", # Documentation
+    "style", # Code style
+    "refactor", # Code refactor
+    "test", # Test related
+    "chore", # Maintenance
+]
+
+
+[header.scope]
+# Scope validation module
+required = false
+allowed_scopes = [
+    "core",
+    "cli",
+    "ui",
+    "docs",
+    "test",
+]
+
+# Subject validation module
+[header.subject]
+spaces_after_colon = 1
+forbid_trailing_period = true  # Forbid ending with a period
+min_length = 2                 # Default min_length is 2
+max_length = 72                # Default max_length is 72
+
+
+[body]
+required = false
+min_blank_lines_before_body = 1
+forbid_trailing_whitespace = true
+min_line_length = 2
+max_line_length = 72
+
+
+[footer]
+# Footer section is distinguished from the body by specific keywords.
+# When one of the start keywords appears, the following lines are treated as footer content.
+# Common keywords include BREAKING CHANGE, Closes, Fixes, Signed-off-by.
+start_key_words = ["BREAKING CHANGE", "Closes", "Fixes", "Signed-off-by"]
+min_blank_lines_before_footer = 1
+min_line_length = 2
+max_line_length = 72
+forbid_trailing_whitespace = true
