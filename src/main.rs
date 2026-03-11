@@ -1,46 +1,53 @@
-use crate::install::{init_commit_msg_rule, remove_commit_msg_hook};
 use clap::Parser;
-use cli::{Cli, Hooks};
-use install::install_commit_msg_hook;
-use util::init_tracing_once;
-
-mod cli;
-mod commit_msg;
-mod config;
-mod install;
-mod util;
-mod validate;
+use gitru::cli::{Cli, Commands};
+use gitru::hook::{self, run_hook};
+use gitru::util::colored_console::init_console;
+use gitru::util::colored_print::print_error;
 
 fn main() {
-    // Enable ANSI color support for legacy Windows10 console
-    #[cfg(windows)]
-    util::enable_old_windows_color_support();
-
-    // Initialize global logging system
-    init_tracing_once();
+    init_console();
 
     let cli = Cli::parse();
-    let hook = cli.command;
 
-    match hook {
-        Hooks::CommitMsg { action } => match action {
-            cli::CommitMsgAction::Init => {
-                init_commit_msg_rule();
+    match cli.command {
+        Commands::II { hook, force } => {
+            if let Err(e) = hook::init(&hook, force) {
+                print_error(&e);
+                std::process::exit(1);
             }
-            cli::CommitMsgAction::Install => {
-                install_commit_msg_hook();
+
+            if let Err(e) = hook::install(&hook, force) {
+                print_error(&e);
+                std::process::exit(1);
             }
-            cli::CommitMsgAction::II => {
-                install_commit_msg_hook();
-                init_commit_msg_rule();
+        }
+
+        Commands::Init { hook, force } => {
+            if let Err(e) = hook::init(&hook, force) {
+                print_error(&e);
+                std::process::exit(1);
             }
-            cli::CommitMsgAction::Validate {
-                msg_path,
-                rule_path,
-            } => {
-                validate::validate_msg(msg_path.as_str(), rule_path.as_str());
+        }
+
+        Commands::Install { hook, force } => {
+            if let Err(e) = hook::install(&hook, force) {
+                print_error(&e);
+                std::process::exit(1);
             }
-            cli::CommitMsgAction::Uninstall => remove_commit_msg_hook(),
-        },
+        }
+
+        Commands::Uninstall { hook } => {
+            if let Err(e) = hook::uninstall(&hook) {
+                print_error(&e);
+                std::process::exit(1);
+            }
+        }
+
+        Commands::Run { hook, file } => {
+            if let Err(err) = run_hook(&hook, file.as_deref()) {
+                print_error(&err);
+                std::process::exit(1);
+            }
+        }
     }
 }

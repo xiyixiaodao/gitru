@@ -2,8 +2,8 @@
 
 ## Git Commit Message Validation Tool
 
-> Enforces commit message conventions through configurable rules .  
-(currently supports type、scope and subject validation, Additional features will be implemented gradually.)
+**gitru** is a lightweight, configurable **Git commit message validation tool** designed to enforce [Conventional Commits](https://www.conventionalcommits.org/) standards across development teams.
+
 
 ### Installation
 
@@ -27,63 +27,103 @@ Download pre-built binary:
 Install hook and initialize configuration:
 
 ```bash
-gitru commit-msg  ii
+gitru ii commit-msg
 ```
 
 Command breakdown:
 
 * `ii` = `install` (sets up git hook) + `init` (creates config template)
-* Execute separately: `gitru commit-msg install` then `gitru commit-msg init`
+* Execute separately: `gitru install commit-msg` and `gitru init commit-msg`
+
+For more options:
+```bash
+gitru --help
+```
+
 
 ### Workflow
 
 After installation:
 
 * Git hook installed to `.git/hooks/commit-msg `
-* Configuration template created at `.commit-msg-rule.yaml`
+* Configuration template created at `.commit-msg-rule.toml`
 
-Customize validation rules by editing `.commit-msg-rule.yaml`.  
+Customize validation rules by editing `.commit-msg-rule.toml`.  
 You can optionally modify, delete, or comment out the options that do not require validation.
 
 #### configuration file example:
 
-```yaml
-# Commit Message may like : .
-# ╔══════════════════════════════════════════════╗
-# ║    type(optional scope): subject             ║
-# ╚══════════════════════════════════════════════╝
+```toml
+# The Conventional Commits 
 #
-# Structure explanation:
-# 1. type        → Required, commit type (feat/fix/docs etc)
-# 2. (scope)     → Optional, scope (wrapped in parentheses)
-# 3. : subject   → Required, brief description (space after colon)
+# ╔═════════════════════════════════════════════════╗
+# ║          COMMIT FORMAT TEMPLATE                 ║
+# ╠═════════════════════════════════════════════════╣
+# ║    type(optional scope): subject                ║
+# ║                                                 ║
+# ║    [optional body]                              ║
+# ║                                                 ║
+# ║    [optional footer]                            ║
+# ║     - BREAKING CHANGE: xxxxx                    ║
+# ║     - Closes #issue                             ║
+# ╚═════════════════════════════════════════════════╝
+#
 
 
-# Type validation module
-type:
-  allowed_types:
-    - feat
-    - fix
-    - docs
-    - style
-    - refactor
-    - test
-    - chore
+[global]
+version = "1.0.0"
+enable_validation = true
+skip_validation_words = [
+    "--no-verify",
+    "SKIP",
+]
 
-# Scope validation module
-scope:
-#    allowed_scopes:
-#      - core
-#      - cli
-#      - ui
-#      - docs
-#      - test
 
-# Subject validation module
-subject:
-  require_space_after_colon: true #true is default value
-  min_length: 2 # default min_length is 1
-  max_length: 72 # default max_length is 72
+[header]
+[header.type]
+allowed_types = [
+    "feat", # New feature
+    "fix", # Bug fix
+    "docs", # Documentation
+    "style", # Code style
+    "refactor", # Code refactor
+    "test", # Test related
+    "chore", # Maintenance
+]
+
+
+[header.scope]
+required = false
+allowed_scopes = [
+    "core",
+    "cli",
+    "ui",
+    "docs",
+    "test",
+]
+
+[header.subject]
+spaces_after_colon = 1
+forbid_trailing_period = true  # Forbid ending with a period
+min_length = 2                 # Default min_length is 2
+max_length = 72                # Default max_length is 72
+
+
+[body]
+required = false
+min_blank_lines_before_body = 1
+forbid_trailing_whitespace = true
+min_line_length = 2
+max_line_length = 72
+
+
+[footer]
+start_key_words = ["BREAKING CHANGE", "Closes", "Fixes", "Signed-off-by"]
+min_blank_lines_before_footer = 1
+min_line_length = 2
+max_line_length = 72
+forbid_trailing_whitespace = true
+
 ```
 
 ### Commit validation example:
@@ -93,6 +133,9 @@ Validation success Example:
 ```bash
 git commit -m "feat: add new API endpoint"
 git commit -m "feat(core): add new API endpoint"
+git commit -m "refactor(core)!: change public API"
+git commit -m "feat: new feature" -m "BREAKING CHANGE: removes old API"
+
 ```
 
 Validation Failure Example:   
@@ -112,7 +155,7 @@ git commit -m "feat): add feature"
 remove `commit-msg` hook from `.git/hooks` directory:
 
 ```shell
-gitru commit-msg uninstall
+gitru uninstall commit-msg 
 ```
 
-remove `.commit-msg-rule.yaml` file manually .
+remove `.commit-msg-rule.toml` file manually .
