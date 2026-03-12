@@ -1,0 +1,103 @@
+name: Rust Cross-Platform Release Build
+
+on:
+  push:
+    tags:
+      - "v*"
+
+jobs:
+  build:
+    name: Build for ${{ matrix.target }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+            archive: tar.gz
+
+          - os: macos-latest
+            target: x86_64-apple-darwin
+            archive: zip
+
+          - os: macos-latest
+            target: aarch64-apple-darwin
+            archive: zip
+
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+            archive: zip
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: stable
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo registry
+        uses: actions/cache@v3
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-${{ matrix.target }}-
+      - name: Build release binary
+        run: cargo build --release --target ${{ matrix.target }}
+
+      - name: Install zip
+        if: matrix.os == 'windows-latest'
+        run: choco install zip -y
+
+      - name: Prepare artifact
+        shell: bash
+        run: |
+          BIN_NAME="gitru"
+          TARGET_DIR="target/${{ matrix.target }}/release"
+          OUT_DIR="dist"
+          mkdir -p "$OUT_DIR"
+          
+          if [[ "${{ matrix.os }}" == "windows-latest" ]]; then
+            BIN_FILE="${BIN_NAME}.exe"
+          else
+            BIN_FILE="${BIN_NAME}"
+          fi
+
+          cp "$TARGET_DIR/$BIN_FILE" "$OUT_DIR/"
+
+          ARCHIVE_NAME="${BIN_NAME}-${{ matrix.target }}.${{ matrix.archive }}"
+
+          if [[ "${{ matrix.archive }}" == "zip" ]]; then
+            zip -j "$ARCHIVE_NAME" "$OUT_DIR/$BIN_FILE"
+          else
+            tar -czvf "$ARCHIVE_NAME" -C "$OUT_DIR" "$BIN_FILE"
+          fi
+
+          echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV
+
+      - name: Install git-cliff
+        run: cargo install git-cliff
+
+      - name: Generate Release Notes
+        run: git-cliff --latest > RELEASE_NOTES.md
+
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body_path: RELEASE_NOTES.md
+          draft: false
+          prerelease: false
+          files: ${{ env.ARCHIVE_NAME }}

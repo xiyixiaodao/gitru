@@ -1,4 +1,4 @@
-name: Rust Cross-Platform Build
+name: Rust Cross-Platform Check
 
 on:
   push:
@@ -24,25 +24,24 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Install Rust
-        #uses: dtolnay/rust-toolchain@master
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: stable
-          targets: ${{ matrix.target }}
           components: clippy, rustfmt
 
-      - name: Cache dependencies
+      - name: Add target
+        run: rustup target add ${{ matrix.target }}
+
+      - name: Cache cargo registry
         uses: actions/cache@v3
-        env:
-          cache-name: cache-rust-target
         with:
           path: |
-            ~/.cargo
-            ~/.rustup
+            ~/.cargo/registry
+            ~/.cargo/git
             target
-          key: ${{ runner.os }}-rust-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
-            ${{ runner.os }}-rust-${{ matrix.target }}-
+            ${{ runner.os }}-cargo-
 
       - name: Format check
         run: cargo fmt --all -- --check
@@ -51,12 +50,9 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
 
       - name: Run tests
-        run: cargo test --release --target ${{ matrix.target }}
+        run: cargo test --all --release
         env:
           RUST_BACKTRACE: 1
 
       - name: Build project
         run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Install binary
-        run: cargo install --path . --target ${{ matrix.target }}
