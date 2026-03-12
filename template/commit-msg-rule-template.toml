@@ -52,6 +52,7 @@ allowed_types = [
     "refactor", # Code refactor
     "test", # Test related
     "chore", # Maintenance
+    "ci", # Continuous Integration changes
 ]
 
 
