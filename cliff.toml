@@ -11,11 +11,11 @@ body = """
 ### {{ group }}
 {% for commit in commits %}
 - {{ commit.message | trim }} ({{ commit.id | truncate(length=7) }})
-    {%- if commit.body | trim != "" %}
+{%- if commit.body is defined and commit.body is string and commit.body | trim != "" %}
     {%- for line in commit.body | trim | split(pat="\n") %}
     {{ "    " ~ line }}
     {%- endfor %}
-    {%- endif %}
+{%- endif %}
 {% endfor %}
 {%- endif %}
 {% endfor %}
