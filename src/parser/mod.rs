@@ -1,6 +1,7 @@
 // Responsible for parsing commit messages
 
 pub mod commit_msg;
+mod footer;
 pub mod header;
 
 /// Preprocess commit message: remove comment lines and empty lines
