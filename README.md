@@ -173,9 +173,8 @@ There are three ways to skip validation:
 
 1. Add the `--no-verify` option when committing from the command line.
 2. Manually choose “skip validation” in your IDE’s commit interface.
-3. Write the keyword specified in the `skip_validation_words` option (from the configuration file) as the **first line
-   **  
-   of the commit message. This will automatically skip validation.  
+3. Write the keyword specified in the `skip_validation_words` option (from the configuration file) as the **first line**
+   of the commit message. <br> This will automatically skip validation.  
    *Note: the keyword must appear alone on a single line.*
 
 This means the following commit message will pass directly **without any validation**:
