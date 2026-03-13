@@ -89,7 +89,7 @@ jobs:
         run: cargo install git-cliff
 
       - name: Generate Release Notes
-        run: git-cliff --latest > RELEASE_NOTES.md
+        run: git-cliff --latest --strip header > RELEASE_NOTES.md
 
 
       - name: Create Release

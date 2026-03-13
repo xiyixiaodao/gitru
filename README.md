@@ -16,7 +16,7 @@ cargo install gitru
 ```
 
 **Method 2:**  
-Download pre-built binary:
+Download pre-built [binary](https://github.com/xiyixiaodao/gitru/releases):
 
 1. Get latest release for your OS
 2. Add to system PATH
