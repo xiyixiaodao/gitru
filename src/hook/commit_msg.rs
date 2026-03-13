@@ -7,6 +7,7 @@ use crate::parser::get_first_non_empty_line;
 use crate::util::colored_print::{print_error, print_success, print_warning};
 use crate::util::path::find_repo_root;
 use crate::validator::commit_msg::validate_commit_msg;
+use crate::validator::git_status::check_config_status;
 use std::fs;
 
 pub fn init(force: bool) -> Result<(), String> {
@@ -85,6 +86,12 @@ pub fn uninstall() -> Result<(), String> {
 }
 
 pub fn run(rule_path: &str) -> Result<(), String> {
+    // Git uses paths relative to the repository root. You should NOT pass an
+    // absolute or full filesystem path; otherwise Git cannot correctly determine
+    // the file's status.
+    let relative_path = COMMIT_MSG_RULE_FILE_NAME;
+    check_config_status(relative_path).map_err(|e| e.to_string())?;
+
     // Parse and validate the commit message rule file
     let rule_content =
         fs::read_to_string(rule_path).map_err(|e| format!("cannot read commit message: {}", e))?;

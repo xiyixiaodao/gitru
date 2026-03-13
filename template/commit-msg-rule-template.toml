@@ -93,9 +93,11 @@ min_line_length = 2
 max_line_length = 72
 forbid_trailing_whitespace = true
 
-# 是否开启拼写检测
+# Whether to enable spell checking for footer keywords
 [footer.start_key_words_spellcheck]
-# 开启后，当只有header+body时，会检测body是否是footer关键词拼写错误
+# When enabled, and the commit contains only a header + body (no footer),
+# the body will be checked to determine whether it is a misspelled footer keyword.
 enable = true
-# 检测阈值，默认0.8，当相似度超过阈值时，会认为是拼写错误
-threshold = 0.8
+# Similarity threshold. Default is 0.7.
+# When the similarity score exceeds this threshold, the text is considered a misspelling.
+threshold = 0.7
