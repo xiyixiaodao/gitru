@@ -2,8 +2,10 @@
 
 ## Git Commit Message Validation Tool
 
-**gitru** is a lightweight, configurable **Git commit message validation tool** designed to enforce [Conventional Commits](https://www.conventionalcommits.org/) standards across development teams.
+**gitru** is a lightweight, configurable **Git commit message validation tool** designed to
+enforce [Conventional Commits](https://www.conventionalcommits.org/) standards across development teams.
 
+---
 
 ### Installation
 
@@ -22,6 +24,8 @@ Download pre-built [binary](https://github.com/xiyixiaodao/gitru/releases):
 2. Add to system PATH
 3. Set executable permissions:
 
+---
+
 ### Usage
 
 Install hook and initialize configuration:
@@ -36,10 +40,12 @@ Command breakdown:
 * Execute separately: `gitru install commit-msg` and `gitru init commit-msg`
 
 For more options:
+
 ```bash
 gitru --help
 ```
 
+---
 
 ### Workflow
 
@@ -124,6 +130,15 @@ min_line_length = 2
 max_line_length = 72
 forbid_trailing_whitespace = true
 
+# Whether to enable spell checking for footer keywords
+[footer.start_key_words_spellcheck]
+# When enabled, and the commit contains only a header + body (no footer),
+# the body will be checked to determine whether it is a misspelled footer keyword.
+enable = true
+# Similarity threshold. Default is 0.7.
+# When the similarity score exceeds this threshold, the text is considered a misspelling.
+threshold = 0.7
+
 ```
 
 ### Commit validation example:
@@ -149,6 +164,31 @@ git commit -m "feat(): add feature"
 git commit -m "feat(: add feature"
 git commit -m "feat): add feature"
 ```
+
+---
+
+### Skip Validation
+
+There are three ways to skip validation:
+
+1. Add the `--no-verify` option when committing from the command line.
+2. Manually choose “skip validation” in your IDE’s commit interface.
+3. Write the keyword specified in the `skip_validation_words` option (from the configuration file) as the **first line
+   **  
+   of the commit message. This will automatically skip validation.  
+   *Note: the keyword must appear alone on a single line.*
+
+This means the following commit message will pass directly **without any validation**:
+
+```
+--no-verify
+
+feat: add new feature
+```
+
+---
+
+如果你愿意，我还能帮你把整份文档统一成更专业的英文技术说明书，让整体风格更一致。
 
 ### Uninstall
 
