@@ -92,3 +92,10 @@ min_blank_lines_before_footer = 1
 min_line_length = 2
 max_line_length = 72
 forbid_trailing_whitespace = true
+
+# 是否开启拼写检测
+[footer.start_key_words_spellcheck]
+# 开启后，当只有header+body时，会检测body是否是footer关键词拼写错误
+enable = true
+# 检测阈值，默认0.8，当相似度超过阈值时，会认为是拼写错误
+threshold = 0.8

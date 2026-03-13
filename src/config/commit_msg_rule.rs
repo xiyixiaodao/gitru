@@ -83,6 +83,28 @@ pub struct FooterRule {
     pub min_line_length: usize,
     pub max_line_length: usize,
     pub forbid_trailing_whitespace: bool,
+    pub start_key_words_spellcheck: Option<StartKeyWordsSpellcheck>,
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct StartKeyWordsSpellcheck {
+    /// When enabled, if the commit contains only header + body,
+    /// the body will be checked to see whether it is a misspelled footer keyword.
+    /// Enabled by default.
+    pub enable: bool,
+
+    /// Similarity threshold. Default is 0.7.
+    /// When the similarity exceeds this threshold, it is treated as a spelling error.
+    pub threshold: f64,
+}
+
+impl Default for StartKeyWordsSpellcheck {
+    fn default() -> Self {
+        Self {
+            enable: true,
+            threshold: 0.7,
+        }
+    }
 }
 
 #[cfg(test)]

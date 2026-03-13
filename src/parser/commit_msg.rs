@@ -1,7 +1,7 @@
-use crate::config::commit_msg_rule::{
-    get_default_path_parsed_commit_msg_rule, ParsedCommitMsgRule,
-};
+use crate::config::commit_msg_rule::get_default_path_parsed_commit_msg_rule;
 use crate::error::commit_msg_error::CommitMsgError;
+use crate::error::footer_error::FooterError::FooterKeywordTypoError;
+use crate::parser::footer::{detect_footer_keyword_typo, is_footer_line, looks_like_footer};
 use crate::parser::header::{parse_header, ParsedHeader};
 use crate::parser::preprocess_lines;
 
@@ -13,25 +13,6 @@ pub struct ParsedCommitMessage {
 
     pub blank_lines_before_body: usize,
     pub blank_lines_before_footer: usize,
-}
-
-/// Determine whether a line is the starting line of the footer (simple heuristic)
-fn is_footer_line(line: &str, parsed_commit_msg_rule: &ParsedCommitMsgRule) -> bool {
-    let trimmed = line.trim_start();
-    if trimmed.is_empty() {
-        return false;
-    }
-
-    let footer_keywords = match &parsed_commit_msg_rule.footer {
-        Some(f) => &f.start_key_words,
-        None => return false,
-    };
-
-    let lower = trimmed.to_lowercase();
-
-    footer_keywords
-        .iter()
-        .any(|k| lower.starts_with(&k.to_lowercase()))
 }
 
 /// Remove leading and trailing empty lines from slice, but keep single empty lines between paragraphs
@@ -138,6 +119,48 @@ pub fn parse_commit_msg(content: &str) -> Result<ParsedCommitMessage, CommitMsgE
 
     // 7. Validate header against rules
     let parsed_header = parsed_header.map_err(CommitMsgError::Header)?;
+
+    // 8. Validate body against rules
+    if footer.is_none() && body.is_some() {
+        let footer_cfg = parsed_commit_msg_rule.footer.as_ref().unwrap();
+        let spell_cfg = footer_cfg
+            .start_key_words_spellcheck
+            .clone()
+            .unwrap_or_default();
+
+        if spell_cfg.enable {
+            let threshold = spell_cfg.threshold;
+            let key_words = &footer_cfg.start_key_words;
+
+            let mut footer_block: Vec<&String> = Vec::new();
+            let mut in_footer_block = false;
+
+            for line in body.iter() {
+                if looks_like_footer(line) {
+                    if !in_footer_block {
+                        in_footer_block = true;
+                    }
+                    footer_block.push(line);
+                } else if in_footer_block {
+                    // A body section appears → all previously detected footer‑like lines are discarded
+                    footer_block.clear();
+                    in_footer_block = false;
+                }
+            }
+
+            // The footer_block now contains the “final contiguous block of footer‑like lines”
+            for line in footer_block {
+                if let Some(typo) = detect_footer_keyword_typo(line, threshold, key_words) {
+                    return Err(CommitMsgError::Footer(FooterKeywordTypoError {
+                        wrong: typo.wrong,
+                        correct: typo.correct,
+                        similarity: typo.similarity,
+                        threshold,
+                    }));
+                }
+            }
+        }
+    }
 
     Ok(ParsedCommitMessage {
         header: parsed_header,
