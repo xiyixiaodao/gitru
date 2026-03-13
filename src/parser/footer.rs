@@ -97,7 +97,7 @@ mod tests {
         assert!(detect_footer_keyword_typo(line, threshold, &key_words.clone()).is_some());
         println!(
             "{:?}",
-            detect_footer_keyword_typo(line, threshold, &*key_words)
+            detect_footer_keyword_typo(line, threshold, &key_words)
         );
     }
 }
