@@ -44,9 +44,3 @@ repos:
         language: rust
         files: \.(toml|lock)$
         pass_filenames: false
-
-      - id: git-cliff-preview
-        name: Preview CHANGELOG
-        entry: bash -c 'git-cliff --unreleased --tag $(git describe --tags --abbrev=0)'
-        language: system
-        pass_filenames: false
