@@ -94,7 +94,7 @@ mod tests {
             "Signed-off-by".to_string(),
         ];
 
-        assert!(detect_footer_keyword_typo(line, threshold, &*key_words.clone()).is_some());
+        assert!(detect_footer_keyword_typo(line, threshold, &key_words.clone()).is_some());
         println!(
             "{:?}",
             detect_footer_keyword_typo(line, threshold, &*key_words)
