@@ -188,8 +188,6 @@ feat: add new feature
 
 ---
 
-如果你愿意，我还能帮你把整份文档统一成更专业的英文技术说明书，让整体风格更一致。
-
 ### Uninstall
 
 remove `commit-msg` hook from `.git/hooks` directory:
