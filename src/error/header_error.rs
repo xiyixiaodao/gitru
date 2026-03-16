@@ -35,6 +35,9 @@ Explanation:
     #[error("commit type cannot be empty, e.g. `feat: xxx`")]
     EmptyType,
 
+    #[error("allowed_types is empty, If you don't need type validation, remove or comment out the entire allowed_types field instead.")]
+    EmptyAllowedTypes,
+
     #[error("commit type `{0}` contains invalid characters, use letters, numbers, or emoji")]
     InvalidType(String),
 

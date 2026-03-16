@@ -34,7 +34,7 @@ pub fn is_footer_line(line: &str, rule: &ParsedCommitMsgRule) -> bool {
 }
 
 pub fn looks_like_footer(line: &str) -> bool {
-    line.contains(':')
+    line.contains(':') || line.contains('#')
 }
 
 #[derive(Debug)]

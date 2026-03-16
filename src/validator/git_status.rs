@@ -2,10 +2,9 @@ use crate::error::git_status::ConfigStatusCheckError;
 use crate::util::colored_print::print_warning;
 use std::process::Command;
 
-// Git uses paths relative to the repository root. You should NOT pass an
-// absolute or full filesystem path; otherwise Git cannot correctly determine
-// the file's status.
-
+/// Run a Git command and return its stdout as a String.
+/// Git commands must use paths relative to the repository root.
+/// Passing absolute paths will cause Git to misinterpret file status.
 fn run_git(args: &[&str]) -> Result<String, ConfigStatusCheckError> {
     let output = Command::new("git")
         .args(args)
@@ -15,57 +14,73 @@ fn run_git(args: &[&str]) -> Result<String, ConfigStatusCheckError> {
     Ok(String::from_utf8_lossy(&output.stdout).to_string())
 }
 
-fn is_untracked(path: &str) -> Result<bool, ConfigStatusCheckError> {
-    let out = run_git(&["ls-files", "--others", "--exclude-standard"])?;
-    Ok(out.lines().any(|line| line == path))
-}
-
-fn is_staged(path: &str) -> Result<bool, ConfigStatusCheckError> {
-    let out = run_git(&["diff", "--cached", "--name-only"])?;
-    Ok(out.lines().any(|line| line == path))
-}
-
-fn is_modified(path: &str) -> Result<bool, ConfigStatusCheckError> {
-    let out = run_git(&["diff", "--name-only"])?;
-    Ok(out.lines().any(|line| line == path))
-}
-
-/// Check the status of the configuration file.
+/// Retrieve the Git status of a file using `git status --porcelain`.  
+/// The porcelain format provides two status columns:  
+///   X = index (staged) status  
+///   Y = working tree (unstaged) status  
 ///
-/// - Untracked → warn but do not block the commit
-/// - Modified but not staged → block the commit
-/// - All other cases → allow the commit
+/// Examples:  
+///   " M file" → X=' ', Y='M'  (modified but not staged)  
+///   "M  file" → X='M', Y=' '  (staged modification)  
+///   "MM file" → X='M', Y='M'  (partially staged)  
+///   "?? file" → untracked  
+///
+/// Returns (' ', ' ') if the file does not appear in the porcelain output.  
+fn get_git_status(path: &str) -> Result<(char, char), ConfigStatusCheckError> {
+    let out = run_git(&["status", "--porcelain"])?;
+    for line in out.lines() {
+        if line.len() < 3 {
+            continue;
+        }
+        let x = line.chars().next().unwrap();
+        let y = line.chars().nth(1).unwrap();
+        let file = &line[3..];
+
+        if file == path {
+            return Ok((x, y));
+        }
+    }
+    Ok((' ', ' ')) // Clean: no staged or unstaged changes
+}
+
+/// Validate the Git status of the configuration file.
+///
+/// Rules:
+/// - Untracked file → warn but allow commit
+/// - Modified but not staged (Y == 'M') → block commit
+/// - All other states → allow commit
+///
+/// This ensures users do not accidentally commit with unstaged config changes,
+/// including partially staged modifications.
 pub fn check_config_status(config: &str) -> Result<(), ConfigStatusCheckError> {
-    // Check whether the file exists
+    // Ensure the file exists before checking Git status.
     if !std::path::Path::new(config).exists() {
         return Err(ConfigStatusCheckError::ConfigNotExist(config.to_string()));
     }
 
-    let untracked = is_untracked(config)?;
-    let staged = is_staged(config)?;
-    let modified = is_modified(config)?;
+    let (x, y) = get_git_status(config)?;
 
-    // Case 1: untracked → warn but do not block
-    if untracked {
-        print_warning(
-            format!(
-                "warning: configuration file '{}' exists but is not tracked by git. \
-                 It is recommended to add it to version control.",
-                config
-            )
-            .as_str(),
-        );
+    // Untracked file: warn but do not block the commit.
+    // Users may intentionally add the config file later.
+    if x == '?' && y == '?' {
+        print_warning(&format!(
+            "warning: configuration file '{}' exists but is not tracked by git. \
+             It is recommended to add it to version control.",
+            config
+        ));
         return Ok(());
     }
 
-    // Case 2: tracked but modified and not staged → block
-    if modified && !staged {
+    // Working tree modification not staged (Y == 'M'):
+    // This includes partially staged changes (e.g., X='M', Y='M').
+    // Block the commit to prevent silently ignoring new config changes.
+    if y == 'M' {
         return Err(ConfigStatusCheckError::ConfigNotCommitted {
             file: config.to_string(),
         });
     }
 
-    // Case 3: all other cases → allow
+    // All other states (clean, staged-only, etc.) → allow commit.
     Ok(())
 }
 

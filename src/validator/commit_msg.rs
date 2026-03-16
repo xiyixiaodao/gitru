@@ -8,8 +8,8 @@ use crate::error::footer_error::FooterError::{
     FooterTrailingWhitespace,
 };
 use crate::error::header_error::HeaderError::{
-    EmptyScope, EmptySubject, InvalidSubjectLength, NotAllowedScope, NotAllowedType,
-    SpaceAfterColonNotMatch, SubjectEndsWithPeriod,
+    EmptyAllowedTypes, EmptyScope, EmptySubject, InvalidSubjectLength, NotAllowedScope,
+    NotAllowedType, SpaceAfterColonNotMatch, SubjectEndsWithPeriod,
 };
 use crate::parser::commit_msg::ParsedCommitMessage;
 use crate::parser::header::ParsedHeader;
@@ -21,15 +21,7 @@ pub fn validate_commit_msg(
     let header = &parsed_commit_msg.header;
 
     // 1. validate type
-    let header_type = &header.r#type;
-    let allowed_types = &parsed_commit_msg_rule.header.r#type.allowed_types;
-
-    if !allowed_types.contains(header_type) {
-        return Err(CommitMsgError::Header(NotAllowedType {
-            r#type: header_type.clone(),
-            allowed_types: allowed_types.clone(),
-        }));
-    }
+    validate_type(header, parsed_commit_msg_rule)?;
 
     // 2. validate scope
     validate_scope(header, parsed_commit_msg_rule)?;
@@ -43,6 +35,23 @@ pub fn validate_commit_msg(
     // 5. validate footer
     validate_footer(parsed_commit_msg, parsed_commit_msg_rule)?;
     Ok(true)
+}
+
+fn validate_type(header: &ParsedHeader, rule: &ParsedCommitMsgRule) -> Result<(), CommitMsgError> {
+    if let Some(allowed) = &rule.header.r#type.allowed_types {
+        if allowed.is_empty() {
+            return Err(CommitMsgError::Header(EmptyAllowedTypes));
+        }
+
+        if !allowed.contains(&header.r#type) {
+            return Err(CommitMsgError::Header(NotAllowedType {
+                r#type: header.r#type.clone(),
+                allowed_types: allowed.clone(),
+            }));
+        }
+    }
+
+    Ok(())
 }
 
 fn validate_scope(header: &ParsedHeader, rule: &ParsedCommitMsgRule) -> Result<(), CommitMsgError> {

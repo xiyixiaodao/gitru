@@ -50,7 +50,7 @@ pub struct HeaderRule {
 
 #[derive(Debug, Deserialize)]
 pub struct Type {
-    pub allowed_types: Vec<String>,
+    pub allowed_types: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize)]

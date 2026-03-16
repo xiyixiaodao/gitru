@@ -2,7 +2,7 @@
 
 ## Git Commit Message Validation Tool
 
-**gitru** is a lightweight, configurable **Git commit message validation tool** designed to
+**[gitru](https://crates.io/crates/gitru)** is a lightweight, configurable **Git commit message validation tool** designed to
 enforce [Conventional Commits](https://www.conventionalcommits.org/) standards across development teams.
 
 ---
