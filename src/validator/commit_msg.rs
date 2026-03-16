@@ -284,14 +284,14 @@ pub fn validate_footer(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::config;
     use crate::constant::COMMIT_MSG_RULE_TEMPLATE;
     use crate::parser::commit_msg::parse_commit_msg;
-    use crate::{config, parser};
 
     #[test]
     fn test_validate_commit_msg() {
         let commit_msg = r#"feat: add new feature"#;
-        let parsed_commit_msg = parser::commit_msg::parse_commit_msg(commit_msg);
+        let parsed_commit_msg = parse_commit_msg(commit_msg);
         let parsed_commit_msg_rule =
             config::commit_msg_rule::parse_commit_msg_rule(COMMIT_MSG_RULE_TEMPLATE);
 
