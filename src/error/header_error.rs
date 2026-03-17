@@ -49,6 +49,18 @@ Explanation:
         allowed_types: Vec<String>,
     },
 
+    #[error(
+        "unknown commit type `{wrong}`\n\
+     help: did you mean `{correct}`? (similarity {similarity:.2})\n\
+     note: allowed types: {allowed_types:?}"
+    )]
+    TypeTypo {
+        wrong: String,
+        correct: String,
+        similarity: f64,
+        allowed_types: Vec<String>,
+    },
+
     // Scope validation module
     #[error("scope missing right parenthesis: `{left}`\nExample: `feat(parser): xxx`")]
     MissingRightParen { left: String },

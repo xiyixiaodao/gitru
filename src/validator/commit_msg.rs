@@ -9,10 +9,11 @@ use crate::error::footer_error::FooterError::{
 };
 use crate::error::header_error::HeaderError::{
     EmptyAllowedTypes, EmptyScope, EmptySubject, InvalidSubjectLength, NotAllowedScope,
-    NotAllowedType, SpaceAfterColonNotMatch, SubjectEndsWithPeriod,
+    NotAllowedType, SpaceAfterColonNotMatch, SubjectEndsWithPeriod, TypeTypo,
 };
 use crate::parser::commit_msg::ParsedCommitMessage;
 use crate::parser::header::ParsedHeader;
+use strsim::normalized_levenshtein;
 
 pub fn validate_commit_msg(
     parsed_commit_msg: &ParsedCommitMessage,
@@ -44,6 +45,19 @@ fn validate_type(header: &ParsedHeader, rule: &ParsedCommitMsgRule) -> Result<()
         }
 
         if !allowed.contains(&header.r#type) {
+            let threshold = 0.8;
+
+            if let Some((correct, similarity)) =
+                detect_type_typo(&header.r#type, allowed, threshold)
+            {
+                return Err(CommitMsgError::Header(TypeTypo {
+                    wrong: header.r#type.clone(),
+                    correct,
+                    similarity,
+                    allowed_types: allowed.clone(),
+                }));
+            }
+
             return Err(CommitMsgError::Header(NotAllowedType {
                 r#type: header.r#type.clone(),
                 allowed_types: allowed.clone(),
@@ -52,6 +66,25 @@ fn validate_type(header: &ParsedHeader, rule: &ParsedCommitMsgRule) -> Result<()
     }
 
     Ok(())
+}
+
+pub fn detect_type_typo(wrong: &str, allowed: &[String], threshold: f64) -> Option<(String, f64)> {
+    let mut best = None;
+    let mut best_score = 0.0;
+
+    for valid in allowed {
+        let score = normalized_levenshtein(wrong, valid);
+        if score > best_score {
+            best_score = score;
+            best = Some(valid.clone());
+        }
+    }
+
+    if best_score >= threshold {
+        Some((best.unwrap(), best_score))
+    } else {
+        None
+    }
 }
 
 fn validate_scope(header: &ParsedHeader, rule: &ParsedCommitMsgRule) -> Result<(), CommitMsgError> {
@@ -310,6 +343,38 @@ mod tests {
         );
         println!("is_valid: {:?}", is_valid);
         assert!(is_valid.is_ok());
+    }
+
+    #[test]
+    fn test_type_typo() {
+        let commit_msg = r#"feats: add new feature"#;
+        let parsed_commit_msg = parse_commit_msg(commit_msg);
+        let parsed_commit_msg_rule =
+            config::commit_msg_rule::parse_commit_msg_rule(COMMIT_MSG_RULE_TEMPLATE);
+
+        let is_valid = validate_commit_msg(
+            parsed_commit_msg.as_ref().unwrap(),
+            &parsed_commit_msg_rule.unwrap(),
+        );
+
+        assert!(is_valid.as_ref().is_err());
+
+        match is_valid.as_ref().unwrap_err() {
+            CommitMsgError::Header(TypeTypo {
+                wrong,
+                correct,
+                similarity,
+                allowed_types: _,
+            }) => {
+                assert_eq!(*correct, "feat".to_string());
+                assert!(*similarity > 0.7);
+                assert_eq!(*wrong, "feats".to_string());
+            }
+
+            _ => {
+                panic!("unexpected error: {:?}", is_valid);
+            }
+        }
     }
 
     #[test]
