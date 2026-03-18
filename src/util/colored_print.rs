@@ -65,9 +65,23 @@ pub fn print_info(msg: &str) {
     }
 }
 
+pub fn color_red(s: &str) -> String {
+    if let Some(support) = supports_color::on(Stream::Stdout) {
+        if support.has_16m {
+            format!("\x1b[38;2;255;0;0m{}\x1b[0m", s)
+        } else if support.has_256 {
+            format!("\x1b[38;5;196m{}\x1b[0m", s)
+        } else {
+            format!("\x1b[31m{}\x1b[0m", s)
+        }
+    } else {
+        format!("ERROR: {}", s)
+    }
+}
+
 #[cfg(test)]
 mod tests {
-    use crate::util::colored_print::{print_error, print_success};
+    use crate::util::colored_print::{color_red, print_error, print_success};
 
     // In Rust's unit test environment, `cargo test` does not print output directly to the terminal by default.
     // Instead, it captures the output and only displays it when a test fails.
@@ -80,5 +94,10 @@ mod tests {
     #[test]
     fn test_print_success() {
         print_success("test success");
+    }
+
+    #[test]
+    fn test_color_red() {
+        println!("this is {} colored", color_red("red"));
     }
 }

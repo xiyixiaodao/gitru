@@ -11,7 +11,7 @@ use crate::validator::git_status::check_config_status;
 use std::fs;
 
 pub fn init(force: bool) -> Result<(), String> {
-    let repo_root = find_repo_root();
+    let repo_root = find_repo_root()?;
     let path = repo_root.join(COMMIT_MSG_RULE_FILE_NAME);
 
     if path.exists() && !force {
@@ -36,7 +36,7 @@ pub fn init(force: bool) -> Result<(), String> {
 }
 
 pub fn install(force: bool) -> Result<(), String> {
-    let repo_root = find_repo_root();
+    let repo_root = find_repo_root()?;
     let hook_path = repo_root.join(".git").join("hooks").join("commit-msg");
 
     if hook_path.exists() && !force {
@@ -67,7 +67,7 @@ pub fn install(force: bool) -> Result<(), String> {
 }
 
 pub fn uninstall() -> Result<(), String> {
-    let repo_root = find_repo_root();
+    let repo_root = find_repo_root()?;
     let hook_path = repo_root.join(".git").join("hooks").join("commit-msg");
 
     if hook_path.exists() {
@@ -109,7 +109,8 @@ pub fn run(rule_path: &str) -> Result<(), String> {
         return Ok(());
     }
 
-    let commit_msg_path = find_repo_root().join(".git/COMMIT_EDITMSG");
+    let repo_root = find_repo_root()?;
+    let commit_msg_path = repo_root.join(".git/COMMIT_EDITMSG");
     let commit_msg_raw = fs::read_to_string(commit_msg_path)
         .map_err(|e| format!("cannot read commit message: {}", e))?;
 

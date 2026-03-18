@@ -35,11 +35,11 @@ pub fn parse_header(header: &str) -> Result<ParsedHeader, HeaderError> {
     // capturing type, scope, breaking marker, and subject:
     // type(scope)?(!)?: subject
     // type = any character except whitespace, '(', '!', ':', supports Unicode and emoji
+    #[allow(clippy::expect_used)]
     static RE: LazyLock<Regex> = LazyLock::new(|| {
         Regex::new(
             r"^(?P<type>[^():!\s]+)(?:\((?P<scope>[^)]+)\))?(?P<breaking>!)?:(?P<spaces>\s*)(?P<subject>.+)$"
-        )
-            .unwrap()
+        ).expect("regex is valid")
     });
 
     if let Some(caps) = RE.captures(header) {
@@ -49,7 +49,10 @@ pub fn parse_header(header: &str) -> Result<ParsedHeader, HeaderError> {
         let scope = caps.name("scope").map(|m| m.as_str().to_string());
 
         // Number of spaces after colon
-        let spaces = caps.name("spaces").unwrap().as_str();
+        let spaces = caps
+            .name("spaces")
+            .map(|m| m.as_str())
+            .ok_or(HeaderError::MissingSpacesGroup)?;
         // Check for full-width spaces after colon
         if spaces.contains('　') {
             return Err(HeaderError::FullWidthSpaceNotAllowed);
@@ -77,12 +80,11 @@ pub fn parse_header(header: &str) -> Result<ParsedHeader, HeaderError> {
 }
 
 fn analyze_header_failure(header: &str) -> HeaderError {
-    // Missing colon
-    if !header.contains(':') {
-        return HeaderError::MissingColon;
-    }
+    let (left, right) = match header.split_once(':') {
+        Some((l, r)) => (l.trim(), r.trim()),
+        None => return HeaderError::MissingColon,
+    };
 
-    let (left, right) = header.split_once(':').unwrap();
     let left = left.trim();
     let right = right.trim();
 

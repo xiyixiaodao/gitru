@@ -1,4 +1,4 @@
-use crate::error::git_status::ConfigStatusCheckError;
+use crate::error::git_status_error::ConfigStatusCheckError;
 use crate::util::colored_print::print_warning;
 use std::process::Command;
 
@@ -32,8 +32,15 @@ fn get_git_status(path: &str) -> Result<(char, char), ConfigStatusCheckError> {
         if line.len() < 3 {
             continue;
         }
-        let x = line.chars().next().unwrap();
-        let y = line.chars().nth(1).unwrap();
+        let x = line
+            .chars()
+            .next()
+            .ok_or_else(|| ConfigStatusCheckError::InvalidGitStatusOutput(line.to_string()))?;
+        let y = line
+            .chars()
+            .nth(1)
+            .ok_or_else(|| ConfigStatusCheckError::InvalidGitStatusOutput(line.to_string()))?;
+
         let file = &line[3..];
 
         if file == path {

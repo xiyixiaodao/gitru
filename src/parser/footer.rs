@@ -69,9 +69,9 @@ pub fn detect_footer_keyword_typo(
     }
 
     if best_score >= threshold {
-        Some(FooterKeywordTypo {
+        best_match.map(|correct| FooterKeywordTypo {
             wrong: keyword.to_string(),
-            correct: best_match.unwrap(),
+            correct,
             similarity: best_score,
         })
     } else {

@@ -2,6 +2,14 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum FooterError {
+    /// Footer configuration is required but missing
+    #[error("footer configuration is required but missing")]
+    MissingFooterConfig,
+
+    /// Footer is required but missing
+    #[error("footer is required but missing")]
+    MissingFooter,
+
     /// Insufficient blank lines before footer
     #[error(
         "insufficient blank lines before footer, expected {min_line}, but found {current_line}"

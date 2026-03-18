@@ -1,4 +1,5 @@
 use crate::constant::COMMIT_MSG_RULE_FILE_NAME;
+use crate::error::commit_msg_error::{CommitMsgError, SystemError};
 use crate::util::path::find_repo_root;
 use serde::Deserialize;
 
@@ -9,11 +10,21 @@ pub fn parse_commit_msg_rule(rule: &str) -> Result<ParsedCommitMsgRule, String> 
     Ok(parsed_rule)
 }
 
-pub fn get_default_path_parsed_commit_msg_rule() -> ParsedCommitMsgRule {
-    let default_path = find_repo_root().join(COMMIT_MSG_RULE_FILE_NAME);
+pub fn get_default_path_parsed_commit_msg_rule() -> Result<ParsedCommitMsgRule, CommitMsgError> {
+    let repo_root =
+        find_repo_root().map_err(|e| CommitMsgError::System(SystemError::RepoRootNotFound(e)))?;
 
-    let rule = std::fs::read_to_string(default_path).unwrap();
-    parse_commit_msg_rule(rule.as_str()).unwrap()
+    let default_path = repo_root.join(COMMIT_MSG_RULE_FILE_NAME);
+
+    let rule = std::fs::read_to_string(&default_path).map_err(|e| {
+        CommitMsgError::System(SystemError::IoPath {
+            path: default_path.clone(),
+            source: e,
+        })
+    })?;
+
+    parse_commit_msg_rule(&rule)
+        .map_err(|e| CommitMsgError::System(SystemError::Parse(e.to_string())))
 }
 
 #[derive(Debug, Deserialize)]
@@ -112,7 +123,7 @@ mod tests {
     use super::*;
     #[test]
     fn test_parse_commit_msg_rule() {
-        let parsed_rule = get_default_path_parsed_commit_msg_rule();
+        let parsed_rule = get_default_path_parsed_commit_msg_rule().unwrap();
         assert_eq!(
             parsed_rule.global.as_ref().unwrap().version.as_deref(),
             Some("1.0.0")

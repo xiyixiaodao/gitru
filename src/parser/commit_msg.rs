@@ -1,5 +1,6 @@
 use crate::config::commit_msg_rule::get_default_path_parsed_commit_msg_rule;
 use crate::error::commit_msg_error::CommitMsgError;
+use crate::error::footer_error::FooterError;
 use crate::error::footer_error::FooterError::FooterKeywordTypoError;
 use crate::parser::footer::{detect_footer_keyword_typo, is_footer_line, looks_like_footer};
 use crate::parser::header::{parse_header, ParsedHeader};
@@ -45,7 +46,7 @@ pub fn parse_commit_msg(content: &str) -> Result<ParsedCommitMessage, CommitMsgE
     };
 
     // 3. Find the starting position of the footer (scan after header)
-    let parsed_commit_msg_rule = &get_default_path_parsed_commit_msg_rule();
+    let parsed_commit_msg_rule = &get_default_path_parsed_commit_msg_rule()?;
     let mut footer_start: Option<usize> = None;
     let mut i = idx + 1;
     while i < lines.len() {
@@ -87,14 +88,14 @@ pub fn parse_commit_msg(content: &str) -> Result<ParsedCommitMessage, CommitMsgE
 
     // Count blank lines before footer
     let mut blank_lines_before_footer = 0;
-    if !footer_slice.is_empty() {
-        // footer_start is the first line of footer
-        let fs = footer_start.unwrap();
-        let mut j = fs - 1;
 
-        while j > idx && lines[j].trim().is_empty() {
-            blank_lines_before_footer += 1;
-            j -= 1;
+    if let Some(fs) = footer_start {
+        for j in (idx + 1..fs).rev() {
+            if lines[j].trim().is_empty() {
+                blank_lines_before_footer += 1;
+            } else {
+                break;
+            }
         }
     }
 
@@ -122,7 +123,11 @@ pub fn parse_commit_msg(content: &str) -> Result<ParsedCommitMessage, CommitMsgE
 
     // 8. Validate body against rules
     if footer.is_none() && body.is_some() {
-        let footer_cfg = parsed_commit_msg_rule.footer.as_ref().unwrap();
+        let footer_cfg = parsed_commit_msg_rule
+            .footer
+            .as_ref()
+            .ok_or(CommitMsgError::Footer(FooterError::MissingFooterConfig))?;
+
         let spell_cfg = footer_cfg
             .start_key_words_spellcheck
             .clone()

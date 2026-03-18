@@ -8,22 +8,18 @@ const COMMIT_MSG_HOOK_TEMPLATE_RAW: &str = include_str!("../template/commit-msg-
 pub const COMMIT_MSG_RULE_FILE_NAME: &str = ".commit-msg-rule.toml";
 
 fn get_program_path() -> Option<String> {
-    match env::current_exe() {
-        Ok(exe_path) => {
-            let exe_dir = exe_path.parent().unwrap().to_path_buf();
-            let exe_name = exe_path.file_name().unwrap().to_string_lossy().into_owned();
-            let path_env = env::var("PATH").unwrap_or_default();
-            let in_path = path_env.split(':').any(|p| p == exe_dir.to_string_lossy());
+    let exe_path = env::current_exe().ok()?;
+    let exe_dir = exe_path.parent()?.to_path_buf();
+    let exe_name = exe_path.file_name()?.to_string_lossy().into_owned();
 
-            if in_path {
-                // If the directory is in PATH, return the executable name only
-                Some(exe_name)
-            } else {
-                // If not in PATH, return the full path
-                Some(exe_path.display().to_string())
-            }
-        }
-        Err(_) => None, // Return None if retrieval fails
+    let path_env = env::var("PATH").ok()?;
+
+    let in_path = env::split_paths(&path_env).any(|p| p == exe_dir);
+
+    if in_path {
+        Some(exe_name)
+    } else {
+        Some(exe_path.to_string_lossy().into_owned())
     }
 }
 

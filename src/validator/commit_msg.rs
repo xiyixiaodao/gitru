@@ -81,7 +81,7 @@ pub fn detect_type_typo(wrong: &str, allowed: &[String], threshold: f64) -> Opti
     }
 
     if best_score >= threshold {
-        Some((best.unwrap(), best_score))
+        best.map(|b| (b, best_score))
     } else {
         None
     }
@@ -246,7 +246,8 @@ pub fn validate_footer(
     // validate footer start keyword
     // --- Smart footer keyword validation (supports typo detection) ---
     if !footer_rule.start_key_words.is_empty() {
-        let footer_text = parsed.footer.as_deref().unwrap();
+        let footer_text = parsed.footer.as_deref().ok_or(FooterError::MissingFooter)?;
+
         let first_line = footer_text.lines().next().unwrap_or("").trim();
 
         // Extract keyword before colon
@@ -263,7 +264,11 @@ pub fn validate_footer(
         let keyword = keyword.trim();
 
         // Load spellcheck config
-        let spell_cfg = footer_rule.start_key_words_spellcheck.as_ref().unwrap();
+        #[allow(clippy::expect_used)]
+        let spell_cfg = footer_rule
+            .start_key_words_spellcheck
+            .as_ref()
+            .expect("start_key_words_spellcheck must exist when start_key_words is non-empty");
         let threshold = spell_cfg.threshold;
 
         // Find best match by similarity
@@ -271,7 +276,7 @@ pub fn validate_footer(
             .start_key_words
             .iter()
             .map(|k| (k, strsim::normalized_levenshtein(keyword, k)))
-            .max_by(|a, b| a.1.partial_cmp(&b.1).unwrap());
+            .max_by(|a, b| a.1.total_cmp(&b.1));
 
         if let Some((correct, similarity)) = best_match {
             if similarity < threshold {
@@ -296,26 +301,30 @@ pub fn validate_footer(
         }
     }
 
-    for (i, line) in parsed.footer.as_deref().unwrap().lines().enumerate() {
-        let width = line.chars().count();
+    if let Some(footer) = &parsed.footer {
+        for (i, line) in footer.lines().enumerate() {
+            let width = line.chars().count();
 
-        if width < footer_rule.min_line_length || width > footer_rule.max_line_length {
-            return Err(CommitMsgError::Footer(FooterLineLengthInvalid {
-                line_number: i + 1,
-                min: footer_rule.min_line_length,
-                max: footer_rule.max_line_length,
-                actual: width,
-            }));
+            if width < footer_rule.min_line_length || width > footer_rule.max_line_length {
+                return Err(CommitMsgError::Footer(FooterLineLengthInvalid {
+                    line_number: i + 1,
+                    min: footer_rule.min_line_length,
+                    max: footer_rule.max_line_length,
+                    actual: width,
+                }));
+            }
         }
     }
 
     // validate footer trailing whitespace
     if footer_rule.forbid_trailing_whitespace {
-        for (i, line) in parsed.footer.as_deref().unwrap().lines().enumerate() {
-            if line.ends_with(' ') {
-                return Err(CommitMsgError::Footer(FooterTrailingWhitespace {
-                    line_number: i + 1,
-                }));
+        if let Some(footer) = &parsed.footer {
+            for (i, line) in footer.lines().enumerate() {
+                if line.ends_with(' ') {
+                    return Err(CommitMsgError::Footer(FooterTrailingWhitespace {
+                        line_number: i + 1,
+                    }));
+                }
             }
         }
     }

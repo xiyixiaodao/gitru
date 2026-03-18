@@ -13,4 +13,7 @@ pub enum ConfigStatusCheckError {
 
     #[error("git command failed: {0}")]
     GitError(String),
+
+    #[error("invalid git status output: {0}")]
+    InvalidGitStatusOutput(String),
 }

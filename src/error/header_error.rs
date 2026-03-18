@@ -115,4 +115,7 @@ Explanation:
         "breaking marker `!` must be placed after type or scope, before colon, e.g. `feat!: xxx`"
     )]
     InvalidBreakingPosition,
+
+    #[error("regex group `spaces` not found")]
+    MissingSpacesGroup,
 }

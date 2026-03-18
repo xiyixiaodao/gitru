@@ -1,5 +1,3 @@
-use crate::util::colored_print::print_error;
-use std::process::exit;
 use std::{
     fs,
     path::{Path, PathBuf},
@@ -11,40 +9,44 @@ use std::{
 /// - If `.git` is a directory → this is the repository root.
 /// - If `.git` is a file → parse the `gitdir:` entry and ensure it points to a valid gitdir.
 /// - Walk up through all ancestor directories until found.
-pub fn find_repo_root() -> PathBuf {
-    if let Ok(cwd) = std::env::current_dir() {
-        find_repo_root_from(cwd)
-    } else {
-        print_error("unable to get current directory");
-        exit(1);
-    }
+pub fn find_repo_root() -> Result<PathBuf, String> {
+    let cwd =
+        std::env::current_dir().map_err(|e| format!("unable to get current directory: {}", e))?;
+    find_repo_root_from(cwd)
 }
 
-fn find_repo_root_from(start: impl AsRef<Path>) -> PathBuf {
+fn find_repo_root_from(start: impl AsRef<Path>) -> Result<PathBuf, String> {
     for dir in start.as_ref().ancestors() {
         let git_path = dir.join(".git");
 
         if git_path.is_dir() {
             // Normal Git repository
-            return dir.to_path_buf();
+            return Ok(dir.to_path_buf());
         }
 
         if git_path.is_file() {
-            // Worktree: parse the gitdir file
-            if let Ok(content) = fs::read_to_string(&git_path) {
-                if let Some(first_line) = content.lines().next() {
-                    if let Some(path) = first_line.strip_prefix("gitdir:").map(str::trim) {
-                        let gitdir = resolve_gitdir(dir, path);
-                        if gitdir.exists() {
-                            return dir.to_path_buf();
+            match fs::read_to_string(&git_path) {
+                Ok(content) => {
+                    if let Some(first_line) = content.lines().next() {
+                        if let Some(path) = first_line.strip_prefix("gitdir:").map(str::trim) {
+                            let gitdir = resolve_gitdir(dir, path);
+                            if gitdir.exists() {
+                                return Ok(dir.to_path_buf());
+                            }
                         }
                     }
+                }
+                Err(e) => {
+                    return Err(format!("Warning: Failed to read .git file: {}", e));
                 }
             }
         }
     }
 
-    panic!("Could not find git repo directory");
+    Err(format!(
+        "Could not find git repo directory starting from {}",
+        start.as_ref().display()
+    ))
 }
 
 /// Resolve the gitdir path:
@@ -83,7 +85,7 @@ mod tests {
         let nested = root.join("a/b/c");
         fs::create_dir_all(&nested).unwrap();
 
-        let found = find_repo_root_from(&nested);
+        let found = find_repo_root_from(&nested).unwrap();
         assert_eq!(found, root);
     }
 
@@ -104,7 +106,7 @@ mod tests {
             &format!("gitdir: {}", real_gitdir.display()),
         );
 
-        let found = find_repo_root_from(&worktree);
+        let found = find_repo_root_from(&worktree).unwrap();
         assert_eq!(found, worktree);
     }
 
@@ -122,7 +124,7 @@ mod tests {
 
         write(worktree.join(".git"), "gitdir: ../.git/worktrees/foo");
 
-        let found = find_repo_root_from(&worktree);
+        let found = find_repo_root_from(&worktree).unwrap();
         assert_eq!(found, worktree);
     }
 
@@ -141,7 +143,7 @@ mod tests {
 
         write(worktree.join(".git"), "gitdir: ../.git/worktrees/foo");
 
-        let found = find_repo_root_from(&nested);
+        let found = find_repo_root_from(&nested).unwrap();
         assert_eq!(found, worktree);
     }
 
@@ -150,7 +152,7 @@ mod tests {
     #[should_panic]
     fn test_not_a_git_repo() {
         let dir = TempDir::new().unwrap();
-        find_repo_root_from(dir.path());
+        find_repo_root_from(dir.path()).unwrap();
     }
 
     // Corrupted .git file
@@ -159,7 +161,7 @@ mod tests {
     fn test_invalid_git_file() {
         let dir = TempDir::new().unwrap();
         write(dir.path().join(".git"), "this is not a valid gitdir");
-        find_repo_root_from(dir.path());
+        find_repo_root_from(dir.path()).unwrap();
     }
 
     // gitdir points to a non-existent path
@@ -168,6 +170,6 @@ mod tests {
     fn test_gitdir_points_to_nonexistent_path() {
         let dir = TempDir::new().unwrap();
         write(dir.path().join(".git"), "gitdir: /non/existent/path");
-        find_repo_root_from(dir.path());
+        find_repo_root_from(dir.path()).unwrap();
     }
 }
