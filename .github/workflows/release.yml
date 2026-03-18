@@ -52,12 +52,9 @@ jobs:
           key: ${{ runner.os }}-cargo-${{ matrix.target }}-${{ hashFiles('**/Cargo.lock') }}
           restore-keys: |
             ${{ runner.os }}-cargo-${{ matrix.target }}-
+
       - name: Build release binary
         run: cargo build --release --target ${{ matrix.target }}
-
-      - name: Install zip
-        if: matrix.os == 'windows-latest'
-        run: choco install zip -y
 
       - name: Prepare artifact
         shell: bash
@@ -76,21 +73,28 @@ jobs:
           cp "$TARGET_DIR/$BIN_FILE" "$OUT_DIR/"
 
           ARCHIVE_NAME="${BIN_NAME}-${{ matrix.target }}.${{ matrix.archive }}"
-
-          if [[ "${{ matrix.archive }}" == "zip" ]]; then
-            zip -j "$ARCHIVE_NAME" "$OUT_DIR/$BIN_FILE"
-          else
-            tar -czvf "$ARCHIVE_NAME" -C "$OUT_DIR" "$BIN_FILE"
-          fi
-
           echo "ARCHIVE_NAME=$ARCHIVE_NAME" >> $GITHUB_ENV
+
+      - name: Zip on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          powershell Compress-Archive -Path dist/* -DestinationPath $env:ARCHIVE_NAME
+
+      - name: Zip/Tar on Unix
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          if [[ "${{ matrix.archive }}" == "zip" ]]; then
+            zip -j "$ARCHIVE_NAME" dist/*
+          else
+            tar -czvf "$ARCHIVE_NAME" -C dist .
+          fi
 
       - name: Install git-cliff
         run: cargo install git-cliff
 
       - name: Generate Release Notes
         run: git-cliff --latest --strip header > RELEASE_NOTES.md
-
 
       - name: Create Release
         uses: softprops/action-gh-release@v2
