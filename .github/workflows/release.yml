@@ -36,10 +36,6 @@ jobs:
           fetch-depth: 0
           fetch-tags: true
 
-      - name: Disable pkg-config for OpenSSL
-        run: |
-          echo "OPENSSL_NO_PKG_CONFIG=1" >> $GITHUB_ENV
-
       # -----------------------------
       # Install OpenSSL (Linux)
       # -----------------------------

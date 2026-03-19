@@ -20,9 +20,6 @@ pub enum ConfigStatusCheckError {
 
 #[derive(Error, Debug)]
 pub enum GitKindError {
-    #[error("failed to open repository: {0}")]
-    Git(#[from] git2::Error),
-
     #[error("failed to read .git file: {0}")]
     Io(#[from] std::io::Error),
 

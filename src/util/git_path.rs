@@ -33,7 +33,6 @@
 //! - Ensure hook and config paths behave consistently across all repo types.
 
 use crate::error::git_error::GitKindError;
-use git2::Repository;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -92,13 +91,9 @@ pub fn detect_current_repo() -> Result<GitKind, GitKindError> {
 }
 
 pub fn detect_git_kind(path: impl AsRef<Path>) -> Result<GitKind, GitKindError> {
-    let repo = Repository::discover(path)?;
-    let workdir = repo.workdir().ok_or(GitKindError::InvalidPath)?;
+    let workdir = find_workdir(path)?;
+    let workdir = workdir.canonicalize()?;
     let git_path = workdir.join(".git");
-    let workdir = repo
-        .workdir()
-        .ok_or(GitKindError::InvalidPath)?
-        .canonicalize()?;
 
     // 1) Normal repository
     if git_path.is_dir() {
@@ -150,6 +145,21 @@ pub fn detect_git_kind(path: impl AsRef<Path>) -> Result<GitKind, GitKindError> 
         git_dir: gitdir,
         workdir,
     })
+}
+
+fn find_workdir(start: impl AsRef<Path>) -> Result<PathBuf, GitKindError> {
+    let mut dir = start.as_ref().canonicalize()?;
+
+    loop {
+        if dir.join(".git").exists() {
+            return Ok(dir);
+        }
+
+        match dir.parent() {
+            Some(parent) => dir = parent.to_path_buf(),
+            None => return Err(GitKindError::InvalidPath),
+        }
+    }
 }
 
 /// Resolves a gitdir path that may be relative to the `.git` file location.
