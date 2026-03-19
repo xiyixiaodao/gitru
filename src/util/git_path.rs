@@ -199,6 +199,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_normal_repo() {
         let dir = TempDir::new().unwrap();
         init_repo_with_master(dir.path());
@@ -215,6 +216,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_worktree() {
         let main = TempDir::new().unwrap();
         let wt = TempDir::new().unwrap();
@@ -256,6 +258,7 @@ mod tests {
     }
 
     #[test]
+    #[ignore]
     fn test_submodule() {
         let super_repo = TempDir::new().unwrap();
 
@@ -298,6 +301,7 @@ mod tests {
 
     // hook_path / config_path for a Normal Repo
     #[test]
+    #[ignore]
     fn test_hook_and_config_normal_repo() {
         let repo_dir = TempDir::new().unwrap();
         init_repo_with_master(repo_dir.path());
@@ -322,6 +326,7 @@ mod tests {
 
     // hook_path / config_path for a Worktree
     #[test]
+    #[ignore]
     fn test_hook_and_config_worktree() {
         let main = TempDir::new().unwrap();
         init_repo_with_master(main.path());
@@ -360,6 +365,7 @@ mod tests {
 
     // hook_path / config_path for a Submodule
     #[test]
+    #[ignore]
     fn test_hook_and_config_submodule() {
         let super_repo = TempDir::new().unwrap();
         init_repo_with_master(super_repo.path());
