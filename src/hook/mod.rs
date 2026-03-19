@@ -1,3 +1,4 @@
+use crate::cli::RunCmd;
 use crate::util::colored_print::{print_error, print_success};
 
 pub mod commit_msg;
@@ -48,12 +49,10 @@ pub fn uninstall(hook: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn run_hook(hook: &str, file: Option<&str>) -> Result<(), String> {
+pub fn run_hook(hook: &RunCmd) -> Result<(), String> {
     match hook {
-        "commit-msg" => {
-            let path = file.ok_or("commit-msg requires a file")?;
-
-            if let Err(e) = commit_msg::run(path) {
+        RunCmd::CommitMsg { msg, rule } => {
+            if let Err(e) = commit_msg::run(msg, rule) {
                 print_error(&e);
                 // status code 1 means fail
                 std::process::exit(1);
@@ -63,6 +62,6 @@ pub fn run_hook(hook: &str, file: Option<&str>) -> Result<(), String> {
             print_success("commit-msg validation passed");
             std::process::exit(0);
         }
-        _ => Err(format!("unsupported hook: {}", hook)),
+        _ => Err(format!("unsupported hook: {:?}", hook)),
     }
 }

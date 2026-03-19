@@ -1,6 +1,6 @@
 use crate::error::body_error::BodyError;
 use crate::error::footer_error::FooterError;
-use crate::error::git_status_error::ConfigStatusCheckError;
+use crate::error::git_error::{ConfigStatusCheckError, GitKindError};
 use crate::error::header_error::HeaderError;
 use std::path::PathBuf;
 
@@ -19,6 +19,9 @@ pub enum CommitMsgError {
 
     #[error("{0}")]
     ConfigStatus(#[from] ConfigStatusCheckError),
+
+    #[error("{0}")]
+    GitKind(#[from] GitKindError),
 
     #[error("{0}")]
     System(#[from] SystemError),

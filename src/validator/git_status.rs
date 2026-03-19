@@ -1,4 +1,4 @@
-use crate::error::git_status_error::ConfigStatusCheckError;
+use crate::error::git_error::ConfigStatusCheckError;
 use crate::util::colored_print::print_warning;
 use std::process::Command;
 

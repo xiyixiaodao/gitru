@@ -13,23 +13,24 @@ COMMIT_MSG_FILE=$1
 # If Rust replacement succeeds, this will be the absolute path or program name
 VALIDATOR_SCRIPT="{{program_exec}}"
 
-# If not replaced (still the placeholder), then use the default program name
-if [ "$VALIDATOR_SCRIPT" = "{{program_placeholder}}" ]; then
-  VALIDATOR_SCRIPT="gitru"
+if [ ! -x "$VALIDATOR_SCRIPT" ]; then
+  if command -v gitru >/dev/null 2>&1; then
+    VALIDATOR_SCRIPT="gitru"
+  else
+    echo "gitru not found. Please reinstall gitru or reinstall the commit-msg hook using 'gitru install commit-msg -f'."
+    exit 1
+  fi
 fi
 
+# Auto-detect project root (supports worktrees)
+PROJECT_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 
-# Get the grandparent directory of current script's location
-# (typically the project root directory)
-UP_TWO_LEVELS=$(cd "$(dirname "$0")/../.." && pwd)
+if [ -z "$PROJECT_ROOT" ]; then
+  echo "Unable to determine project root. Is this a Git repository?"
+  exit 1
+fi
 
-# Reference template file using absolute path
-RULE_FILE="${UP_TWO_LEVELS}/.commit-msg-rule.toml"
+RULE_FILE="${PROJECT_ROOT}/.commit-msg-rule.toml"
 
-# Execute validation program
-"$VALIDATOR_SCRIPT" run commit-msg "$RULE_FILE"
-
-# Capture exit code
-VALIDATION_RESULT=$?
-
-exit $VALIDATION_RESULT
+"$VALIDATOR_SCRIPT" run commit-msg --msg "$COMMIT_MSG_FILE" --rule "$RULE_FILE"
+exit $?

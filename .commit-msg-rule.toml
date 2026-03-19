@@ -44,6 +44,8 @@ skip_validation_words = [
 
 [header.type]
 # Type validation module
+# Do not set allowed_types to an empty array.
+# If you don't need type validation, remove or comment out the entire allowed_types field instead.
 allowed_types = [
     "feat", # New feature
     "fix", # Bug fix

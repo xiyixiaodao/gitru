@@ -17,3 +17,18 @@ pub enum ConfigStatusCheckError {
     #[error("invalid git status output: {0}")]
     InvalidGitStatusOutput(String),
 }
+
+#[derive(Error, Debug)]
+pub enum GitKindError {
+    #[error("failed to open repository: {0}")]
+    Git(#[from] git2::Error),
+
+    #[error("failed to read .git file: {0}")]
+    Io(#[from] std::io::Error),
+
+    #[error("invalid gitdir format in .git file")]
+    InvalidGitDir,
+
+    #[error("invalid path structure")]
+    InvalidPath,
+}

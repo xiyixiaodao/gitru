@@ -43,8 +43,8 @@ fn main() {
             }
         }
 
-        Commands::Run { hook, file } => {
-            if let Err(err) = run_hook(&hook, file.as_deref()) {
+        Commands::Run { hook } => {
+            if let Err(err) = run_hook(&hook) {
                 print_error(&err);
                 std::process::exit(1);
             }

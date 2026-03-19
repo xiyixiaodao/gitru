@@ -1,4 +1,5 @@
 use clap::{Parser, Subcommand};
+use std::path::PathBuf;
 
 #[derive(Parser)]
 #[command(version, about, long_about = None)]
@@ -45,11 +46,30 @@ pub enum Commands {
     /// Run the specified git hook script
     Run {
         /// hook name, currently only supports commit-msg
-        hook: String,
+        #[command(subcommand)]
+        hook: RunCmd,
+    },
+}
 
-        // commit-msg hook requires a commit message file
-        // pre-commit hook does not require a file parameter
-        #[arg(required = false)]
-        file: Option<String>,
+#[derive(Debug, Clone, Subcommand)]
+pub enum RunCmd {
+    /// Validate commit message
+    // #[command(name = "commit-msg")]
+    CommitMsg {
+        /// Path to commit message file
+        #[arg(long)]
+        msg: PathBuf,
+
+        /// Path to rule file
+        #[arg(long)]
+        rule: PathBuf,
+    },
+
+    /// Run pre-commit hook
+    // #[command(name = "pre-commit")]
+    PreCommit {
+        /// Path to rule file
+        #[arg(long)]
+        rule: PathBuf,
     },
 }

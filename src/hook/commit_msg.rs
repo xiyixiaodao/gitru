@@ -5,20 +5,21 @@ use crate::constant::{
 use crate::parser::commit_msg::parse_commit_msg;
 use crate::parser::get_first_non_empty_line;
 use crate::util::colored_print::{print_error, print_success, print_warning};
-use crate::util::path::find_repo_root;
+use crate::util::git_path::detect_current_repo;
 use crate::validator::commit_msg::validate_commit_msg;
 use crate::validator::git_status::check_config_status;
 use std::fs;
+use std::path::PathBuf;
 
 pub fn init(force: bool) -> Result<(), String> {
-    let repo_root = find_repo_root()?;
-    let path = repo_root.join(COMMIT_MSG_RULE_FILE_NAME);
-
+    let git_kind =
+        detect_current_repo().map_err(|e| format!("failed to detect git kind: {}", e))?;
+    let path = git_kind.config_path(COMMIT_MSG_RULE_FILE_NAME);
     if path.exists() && !force {
         return Err(format!(
             "commit-msg config file '{}' already exists at {}. Use -f or --force to overwrite.",
             COMMIT_MSG_RULE_FILE_NAME,
-            repo_root.display()
+            path.display()
         ));
     }
 
@@ -30,14 +31,15 @@ pub fn init(force: bool) -> Result<(), String> {
     print_success(&format!(
         "commit-msg config file '{}' has been initialized at {}",
         COMMIT_MSG_RULE_FILE_NAME,
-        repo_root.display()
+        path.display()
     ));
     Ok(())
 }
 
 pub fn install(force: bool) -> Result<(), String> {
-    let repo_root = find_repo_root()?;
-    let hook_path = repo_root.join(".git").join("hooks").join("commit-msg");
+    let git_kind =
+        detect_current_repo().map_err(|e| format!("failed to detect git kind: {}", e))?;
+    let hook_path = git_kind.hook_path("commit-msg");
 
     if hook_path.exists() && !force {
         print_error(&format!(
@@ -67,8 +69,9 @@ pub fn install(force: bool) -> Result<(), String> {
 }
 
 pub fn uninstall() -> Result<(), String> {
-    let repo_root = find_repo_root()?;
-    let hook_path = repo_root.join(".git").join("hooks").join("commit-msg");
+    let git_kind =
+        detect_current_repo().map_err(|e| format!("failed to detect git kind: {}", e))?;
+    let hook_path = git_kind.hook_path("commit-msg");
 
     if hook_path.exists() {
         if let Err(e) = fs::remove_file(&hook_path) {
@@ -85,7 +88,7 @@ pub fn uninstall() -> Result<(), String> {
     Ok(())
 }
 
-pub fn run(rule_path: &str) -> Result<(), String> {
+pub fn run(msg_path: &PathBuf, rule_path: &PathBuf) -> Result<(), String> {
     // Git uses paths relative to the repository root. You should NOT pass an
     // absolute or full filesystem path; otherwise Git cannot correctly determine
     // the file's status.
@@ -109,10 +112,8 @@ pub fn run(rule_path: &str) -> Result<(), String> {
         return Ok(());
     }
 
-    let repo_root = find_repo_root()?;
-    let commit_msg_path = repo_root.join(".git/COMMIT_EDITMSG");
-    let commit_msg_raw = fs::read_to_string(commit_msg_path)
-        .map_err(|e| format!("cannot read commit message: {}", e))?;
+    let commit_msg_raw =
+        fs::read_to_string(msg_path).map_err(|e| format!("cannot read commit message: {}", e))?;
 
     if let Some(first_line) = get_first_non_empty_line(&commit_msg_raw) {
         // Get skip_validation_words, default is an empty list

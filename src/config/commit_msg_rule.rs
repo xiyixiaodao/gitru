@@ -1,6 +1,6 @@
 use crate::constant::COMMIT_MSG_RULE_FILE_NAME;
 use crate::error::commit_msg_error::{CommitMsgError, SystemError};
-use crate::util::path::find_repo_root;
+use crate::util::git_path::detect_current_repo;
 use serde::Deserialize;
 
 pub fn parse_commit_msg_rule(rule: &str) -> Result<ParsedCommitMsgRule, String> {
@@ -11,10 +11,8 @@ pub fn parse_commit_msg_rule(rule: &str) -> Result<ParsedCommitMsgRule, String> 
 }
 
 pub fn get_default_path_parsed_commit_msg_rule() -> Result<ParsedCommitMsgRule, CommitMsgError> {
-    let repo_root =
-        find_repo_root().map_err(|e| CommitMsgError::System(SystemError::RepoRootNotFound(e)))?;
-
-    let default_path = repo_root.join(COMMIT_MSG_RULE_FILE_NAME);
+    let git_kind = detect_current_repo()?;
+    let default_path = git_kind.config_path(COMMIT_MSG_RULE_FILE_NAME);
 
     let rule = std::fs::read_to_string(&default_path).map_err(|e| {
         CommitMsgError::System(SystemError::IoPath {
