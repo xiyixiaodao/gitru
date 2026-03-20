@@ -27,8 +27,8 @@
 [global]
 version = "1.0.0"
 enable_validation = true
-# Skip validation when the first line of the commit message
-# exactly matches one of the following keywords.
+# Skip validation only when the first line of the commit message
+# exactly matches one of the following keywords (case‑sensitive).
 skip_validation_words = [
     "--no-verify",
     "SKIP",

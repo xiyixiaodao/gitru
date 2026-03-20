@@ -124,11 +124,30 @@ pub fn run(msg_path: &PathBuf, rule_path: &PathBuf) -> Result<(), String> {
             .unwrap_or_else(Vec::new);
 
         // Check if the first line matches any skip words
-        if skip_words
+        if skip_words.iter().any(|w| w == first_line.trim()) {
+            let mut lines: Vec<&str> = commit_msg_raw.lines().collect();
+
+            // find index of first non-empty line and remove it
+            if let Some(idx) = lines.iter().position(|l| l.trim() == first_line.trim()) {
+                lines.remove(idx);
+            }
+
+            // join back new commit message
+            let new_msg = lines.join("\n");
+
+            // write back commit message file
+            fs::write(msg_path, new_msg)
+                .map_err(|e| format!("failed to rewrite commit message: {}", e))?;
+
+            print_success("commit message is skipped validation");
+            return Ok(());
+        } else if skip_words
             .iter()
             .any(|w| w.eq_ignore_ascii_case(first_line.trim()))
         {
-            return Ok(());
+            return Err(
+                "skip keyword matched case-insensitively; validation not skipped".to_string(),
+            );
         }
     } else {
         return Err("commit message cannot be empty".to_string());
