@@ -8,8 +8,8 @@ use crate::error::footer_error::FooterError::{
     FooterTrailingWhitespace,
 };
 use crate::error::header_error::HeaderError::{
-    EmptyAllowedTypes, EmptyScope, EmptySubject, InvalidSubjectLength, NotAllowedScope,
-    NotAllowedType, SpaceAfterColonNotMatch, SubjectEndsWithPeriod, TypeTypo,
+    EmptyAllowedScopes, EmptyAllowedTypes, EmptyScope, EmptySubject, InvalidSubjectLength,
+    NotAllowedScope, NotAllowedType, SpaceAfterColonNotMatch, SubjectEndsWithPeriod, TypeTypo,
 };
 use crate::parser::commit_msg::ParsedCommitMessage;
 use crate::parser::header::ParsedHeader;
@@ -88,28 +88,61 @@ pub fn detect_type_typo(wrong: &str, allowed: &[String], threshold: f64) -> Opti
 }
 
 fn validate_scope(header: &ParsedHeader, rule: &ParsedCommitMsgRule) -> Result<(), CommitMsgError> {
-    let scope_cfg = match &rule.header.scope {
-        Some(cfg) => cfg,
-        // no scope rule → pass
-        None => return Ok(()),
+    let Some(scope_cfg) = &rule.header.scope else {
+        return Ok(()); // no scope rule → pass
     };
 
-    let scope = &header.scope;
+    let scope = header.scope.as_ref();
+    let allowed = scope_cfg.allowed_scopes.as_ref();
 
-    // scope is required → validate scope is not empty
-    if scope_cfg.required && scope.is_none() {
-        return Err(CommitMsgError::Header(EmptyScope));
-    }
+    // --- Case 1: scope is required ---
+    if scope_cfg.required == Some(true) {
+        // 1.1 required but missing
+        let Some(scope_value) = scope else {
+            return Err(CommitMsgError::Header(EmptyScope));
+        };
 
-    // scope is not empty → validate scope is in allowed_scopes
-    if let Some(scope) = scope {
-        let allowed = &scope_cfg.allowed_scopes;
-        if !allowed.is_empty() && !allowed.contains(scope) {
+        // 1.2 required but allowed_scopes is empty or missing
+        let Some(allowed_scopes) = allowed else {
+            return Err(CommitMsgError::Header(EmptyAllowedScopes));
+        };
+        if allowed_scopes.is_empty() {
+            return Err(CommitMsgError::Header(EmptyAllowedScopes));
+        }
+
+        // 1.3 required + provided + allowed_scopes exists → check membership
+        if !allowed_scopes.contains(scope_value) {
             return Err(CommitMsgError::Header(NotAllowedScope {
-                scope: scope.to_string(),
-                allowed_scopes: allowed.clone(),
+                scope: scope_value.clone(),
+                allowed_scopes: allowed_scopes.clone(),
             }));
         }
+
+        return Ok(());
+    }
+
+    // --- Case 2: scope is optional ---
+    // 2.1 optional and not provided → OK
+    let Some(scope_value) = scope else {
+        return Ok(());
+    };
+
+    // 2.2 optional + provided but no allowed_scopes → OK
+    let Some(allowed_scopes) = allowed else {
+        return Ok(());
+    };
+
+    // 2.3 optional + provided + allowed_scopes empty → error
+    if allowed_scopes.is_empty() {
+        return Err(CommitMsgError::Header(EmptyAllowedScopes));
+    }
+
+    // 2.4 optional + provided + allowed_scopes exists → check membership
+    if !allowed_scopes.contains(scope_value) {
+        return Err(CommitMsgError::Header(NotAllowedScope {
+            scope: scope_value.clone(),
+            allowed_scopes: allowed_scopes.clone(),
+        }));
     }
 
     Ok(())
@@ -317,14 +350,14 @@ pub fn validate_footer(
     }
 
     // validate footer trailing whitespace
-    if footer_rule.forbid_trailing_whitespace {
-        if let Some(footer) = &parsed.footer {
-            for (i, line) in footer.lines().enumerate() {
-                if line.ends_with(' ') {
-                    return Err(CommitMsgError::Footer(FooterTrailingWhitespace {
-                        line_number: i + 1,
-                    }));
-                }
+    if footer_rule.forbid_trailing_whitespace
+        && let Some(footer) = &parsed.footer
+    {
+        for (i, line) in footer.lines().enumerate() {
+            if line.ends_with(' ') {
+                return Err(CommitMsgError::Footer(FooterTrailingWhitespace {
+                    line_number: i + 1,
+                }));
             }
         }
     }

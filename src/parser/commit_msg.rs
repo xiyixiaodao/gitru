@@ -3,7 +3,7 @@ use crate::error::commit_msg_error::CommitMsgError;
 use crate::error::footer_error::FooterError;
 use crate::error::footer_error::FooterError::FooterKeywordTypoError;
 use crate::parser::footer::{detect_footer_keyword_typo, is_footer_line, looks_like_footer};
-use crate::parser::header::{parse_header, ParsedHeader};
+use crate::parser::header::{ParsedHeader, parse_header};
 use crate::parser::preprocess_lines;
 
 #[derive(Debug, Clone)]

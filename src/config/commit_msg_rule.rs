@@ -64,8 +64,8 @@ pub struct Type {
 
 #[derive(Debug, Deserialize)]
 pub struct Scope {
-    pub required: bool,
-    pub allowed_scopes: Vec<String>,
+    pub required: Option<bool>,
+    pub allowed_scopes: Option<Vec<String>>,
 }
 
 #[derive(Debug, Deserialize)]

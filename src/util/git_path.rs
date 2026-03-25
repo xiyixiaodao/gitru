@@ -175,7 +175,7 @@ fn resolve_gitdir(base: &Path, gitdir: &str) -> Result<PathBuf, GitKindError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::util::git_path::{detect_git_kind, GitKind};
+    use crate::util::git_path::{GitKind, detect_git_kind};
 
     use std::fs;
     use std::path::Path;

@@ -42,7 +42,9 @@ pub enum FooterError {
     FooterTrailingWhitespace { line_number: usize },
 
     /// Footer keyword appears misspelled
-    #[error("footer keyword appears misspelled:\n  \"{wrong}\" → \"{correct}\"\n  similarity = {similarity:.2} (threshold = {threshold:.2})")]
+    #[error(
+        "footer keyword appears misspelled:\n  \"{wrong}\" → \"{correct}\"\n  similarity = {similarity:.2} (threshold = {threshold:.2})"
+    )]
     FooterKeywordTypoError {
         wrong: String,
         correct: String,

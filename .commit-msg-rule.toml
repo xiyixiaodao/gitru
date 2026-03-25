@@ -36,30 +36,58 @@ skip_validation_words = [
 
 
 [header]
-# Header section validation
+# Header validation
 # Includes type, scope, and subject checks
+#
 # Breaking change detection:
-# If `!` is added before the subject, it indicates a breaking change.
+# Adding `!` before the colon indicates a breaking change.
 # Example: `refactor(parser)!: change public API`
 
 [header.type]
 # Type validation module
-# Do not set allowed_types to an empty array.
-# If you don't need type validation, remove or comment out the entire allowed_types field instead.
+#
+# allowed_types:
+#   - Defines the list of allowed commit types (following Conventional Commits)
+#   - ⚠ This array must NOT be empty under any circumstances
+#       - An empty array is treated as a configuration error and will cause validation to fail
+#       - If you do not need type validation, comment out or remove the entire allowed_types field
+#
+# Examples:
+#   feat: add new feature
+#   fix: resolve bug
+#   docs: update documentation
+#
 allowed_types = [
     "feat", # New feature
     "fix", # Bug fix
     "docs", # Documentation
-    "style", # Code style
-    "refactor", # Code refactor
+    "style", # Code style (formatting only)
+    "refactor", # Code refactor (no behavior change)
     "test", # Test related
-    "chore", # Maintenance
+    "chore", # Maintenance tasks
     "ci", # Continuous Integration changes
 ]
 
 
+
 [header.scope]
-# Scope validation module
+# Scope validation rules
+#
+# required:
+#   - true  → A scope must be provided and must appear in allowed_scopes
+#   - false → Scope is optional; if provided, it must appear in allowed_scopes
+#
+# allowed_scopes:
+#   - Defines the list of allowed scopes
+#   - ⚠ Regardless of the value of `required`, this array must NOT be empty
+#       - An empty array is considered a configuration error and will cause validation to fail
+#       - If you do not need scope validation, set required to false and comment out the entire allowed_scopes field.
+#
+# Examples:
+#   feat: ...
+#   feat(core): ...
+#   fix(ui): ...
+#
 required = false
 allowed_scopes = [
     "core",
@@ -68,6 +96,7 @@ allowed_scopes = [
     "docs",
     "test",
 ]
+
 
 # Subject validation module
 [header.subject]
